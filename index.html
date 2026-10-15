@@ -182,7 +182,7 @@ a.innerHTML=`<header><div><h1>${esc(S.st.nm)}</h1><p class="sub">Sprawdziany, ka
 const setStat=t=>{const e=$('#sv');if(e)e.textContent=t};
 const sched=()=>{dirty=1;clearTimeout(st_);st_=setTimeout(put,800);setStat('Zapisywanie…')};
 async function put(){if(!cur||!dirty||!ED())return;const e=cur;if(!e.ti&&!(e.tx||'').trim()&&!/<img/.test(e.h)&&!e.s){dirty=0;return}dirty=0;setStat('Zapisywanie…');
-try{await api('notes/'+e.id,{method:'PUT',body:JSON.stringify(e)});const m={id:e.id,ty:e.ty,s:e.s,l:e.l,d:e.d,ti:e.ti,pin:e.pin,tx:(e.tx||'').slice(0,3000),im:(e.h.match(/<img/g)||[]).length},i=S.ev.findIndex(x=>x.id==e.id);i<0?S.ev.push(m):S.ev[i]=m;setStat('Zapisano')}catch(x){dirty=1;setStat('Błąd zapisu');if(x==413)toast('Notatka jest za duża – usuń część zdjęć')}}
+try{const bd=JSON.stringify(e);await api('notes/'+e.id,{method:'PUT',body:bd,keepalive:bd.length<60000});const m={id:e.id,ty:e.ty,s:e.s,l:e.l,d:e.d,ti:e.ti,pin:e.pin,tx:(e.tx||'').slice(0,3000),im:(e.h.match(/<img/g)||[]).length},i=S.ev.findIndex(x=>x.id==e.id);i<0?S.ev.push(m):S.ev[i]=m;setStat('Zapisano')}catch(x){dirty=1;setStat('Błąd zapisu');if(x==413)toast('Notatka jest za duża – usuń część zdjęć')}}
 const wc=()=>{const h=$('#e-h'),w=$('#wc');if(h&&w)w.textContent=(h.innerText.trim().match(/\S+/g)||[]).length+' słów'};
 const flush=()=>{const h=$('#e-h');if(!h||!cur||!ED()||!R||R.m!='edit')return;clearTimeout(it);cur.h=h.innerHTML;cur.tx=cur.h.replace(/<[^>]*>/g,' ');sched();wc()};
 const chg=()=>{clearTimeout(it);it=setTimeout(flush,350)};
@@ -337,8 +337,10 @@ function impModal(){const m=modal(`<h2>Import fiszek i quizu</h2><p class="mt" s
 $('#imp-f').onchange=async e=>{const f=e.target.files[0];if(!f)return;$('#imp-t').value=await f.text();impPrev()}}
 function expDeck(){const d=cleanDeck(R.dk);return{fiszki:d.cards.map(c=>({pytanie:c.q,odpowiedz:c.a})),quiz:d.quiz.map(q=>({pytanie:q.q,odpowiedzi:q.opts,poprawna:q.opts[q.ans],wyjasnienie:q.ex}))}}
 const cleanDeck=d=>({cards:d.cards.map(c=>({q:c.q.trim(),a:c.a.trim()})).filter(c=>c.q&&c.a),quiz:d.quiz.map(q=>{const ct=(q.opts[q.ans]||'').trim(),opts=q.opts.map(o=>o.trim()).filter(Boolean);return{q:q.q.trim(),opts,ans:ct?opts.indexOf(ct):-1,ex:(q.ex||'').trim()}}).filter(q=>q.q&&q.opts.length>=2&&q.ans>=0)});
-let dkT;const dkSched=()=>{clearTimeout(dkT);dkT=setTimeout(saveDeck,800);setStat('Zapisywanie…')};
-async function saveDeck(){clearTimeout(dkT);if(!R||!R.dk)return;setStat('Zapisywanie…');try{await api('deck/'+R.e.id,{method:'PUT',body:JSON.stringify(cleanDeck(R.dk))});setStat('Zapisano')}catch(x){setStat('Błąd zapisu')}}
+let dkT=0,dkRetry=0;const dkSched=()=>{clearTimeout(dkT);dkT=setTimeout(saveDeck,800);setStat('Zapisywanie…')};
+async function saveDeck(){clearTimeout(dkT);dkT=0;if(!R||!R.dk)return true;const id=R.e.id,d=cleanDeck(R.dk),body=JSON.stringify(d);setStat('Zapisywanie…');
+try{const res=await api('deck/'+id,{method:'PUT',body,keepalive:body.length<60000});if(res&&(res.cards!==d.cards.length||res.quiz!==d.quiz.length))throw 500;clearTimeout(dkRetry);setStat('Zapisano');return true}
+catch(x){setStat('Błąd zapisu');toast(x==404?'Serwer nie obsługuje jeszcze fiszek – wgraj nowy api.mjs na GitHub':x==413?'Za dużo danych – usuń część fiszek':x==401?'Sesja wygasła – zaloguj się ponownie':'Nie udało się zapisać fiszek – sprawdź połączenie');if(x!=404&&x!=401&&x!=413){clearTimeout(dkRetry);dkRetry=setTimeout(()=>{if(R&&R.dk&&R.e.id==id)saveDeck()},5000)}return false}}
 function dkRender(){const sc=$('#rd .rsc'),y=sc.scrollTop;$('#rd .rbody').outerHTML=deckHTML();sc.scrollTop=y}
 function deckHTML(){const d=R.dk,t=R.dt||'cards';
 const hd=`<div class="rhd"><h2>Edytor</h2><span id="sv"></span></div><div class="chips" style="margin-bottom:8px"><button class="chip ${t=='cards'?'on':''}" data-a="dkc" data-k="cards">${ic('cards')}Fiszki (${d.cards.length})</button><button class="chip ${t=='quiz'?'on':''}" data-a="dkc" data-k="quiz">${ic('help')}Quiz (${d.quiz.length})</button></div><div class="chips" style="margin:2px 0 8px"><button class="rbtn sm" data-a="dki">${ic('upload')}Importuj z AI / pliku</button><button class="rbtn sm" data-a="dexp">${ic('download')}Pobierz plik</button></div><p class="mt" style="margin:0 0 4px">Zapisuje się samo. Własne fiszki lub pytania zastępują automatyczne i AI w danej zakładce.</p>`;
@@ -366,10 +368,12 @@ if(m=='edit'){try{document.execCommand('styleWithCSS',false,true)}catch(x){}wc()
 function upd(){const b=$('#rd .rbody');if(b)b.outerHTML=R.m=='cards'?cardsHTML():quizHTML()}
 function rscroll(){const o=$('#rd'),sc=o&&o.querySelector('.rsc');if(!sc||!R)return;const y=sc.scrollTop,d=y-(R.y||0);R.y=y;const bar=o.querySelector('.rbar');if(bar&&R.m!='edit'&&R.m!='deck'){if(d>8&&y>90)bar.classList.add('h');else if(d<-8)bar.classList.remove('h')}const p=o.querySelector('.rprog');if(p){const mx=sc.scrollHeight-sc.clientHeight;p.style.width=(mx>0?y/mx*100:0)+'%'}}
 async function openNote(id){let e;
-let ai=null,dk=null;if(id){const m=modal('<div class="empty">Ładowanie…</div>');try{const[n,g,k]=await Promise.all([api('notes/'+id),api('ai/'+id).catch(()=>null),api('deck/'+id).catch(()=>null)]);e=n;if(g&&g.status=='done'&&g.cards)ai=g;if(k&&((k.cards||[]).length||(k.quiz||[]).length))dk=k}catch(x){m.remove();return toast('Nie udało się otworzyć notatki')}m.remove()}
+let ai=null,dk=null,dkE=0;if(id){const m=modal('<div class="empty">Ładowanie…</div>');try{const[n,g,k]=await Promise.all([api('notes/'+id),api('ai/'+id).catch(()=>null),api('deck/'+id).catch(x=>({__e:x}))]);e=n;if(g&&g.status=='done'&&g.cards)ai=g;if(k&&k.__e)dkE=k.__e;else if(k&&((k.cards||[]).length||(k.quiz||[]).length))dk=k}catch(x){m.remove();return toast('Nie udało się otworzyć notatki')}m.remove()}
 else e={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),ty:flt!='all'?flt:'test',s:sj!='all'&&sj!='Inne'?sj:'',l:'',d:today(),ti:'',h:'',pin:0};
-isNew=!id;dirty=0;cur=e;e.h=clean(e.h||'');e.tx=e.h.replace(/<[^>]*>/g,' ');R={e,m:'',g:null,c:null,z:null,ai,dk};show(id?'read':'edit')}
-function closeRd(){$('#rd')?.remove();cur=null;R=null;render()}
+isNew=!id;dirty=0;cur=e;e.h=clean(e.h||'');e.tx=e.h.replace(/<[^>]*>/g,' ');R={e,m:'',g:null,c:null,z:null,ai,dk};if(dkE&&ED())toast(dkE==404?'Serwer nie obsługuje jeszcze fiszek – wgraj nowy api.mjs na GitHub':'Nie udało się pobrać zapisanych fiszek');show(id?'read':'edit')}
+async function closeRd(){if(R&&R.m=='deck')await saveDeck();$('#rd')?.remove();cur=null;R=null;render()}
+function pf(){if(!R)return;if(R.m=='deck'&&dkT)saveDeck();else if(R.m=='edit'&&(it||st_)){flush();clearTimeout(st_);put()}}
+addEventListener('pagehide',pf);document.addEventListener('visibilitychange',()=>{if(document.hidden)pf()});
 let dirtyText=false;
 async function edc(){const before=R.e.h;flush();dirtyText=R.e.h!==before;clearTimeout(st_);await put();const e=cur,kept=S.ev.some(x=>x.id==e.id);if(!kept&&isNew){closeRd();return}if(isNew)conf();isNew=false;R.g=null;R.c=null;R.z=null;R.base=null;if(dirtyText)R.ai=null;show('read')}
 /* ---------- EKSPORT (PDF / JPG) ---------- */
@@ -425,7 +429,7 @@ const t=ev.target.closest('[data-a]');if(!t)return;const a=t.dataset.a,k=t.datas
 if(a=='flt'){flt=k;render()}else if(a=='sj'){sj=k;render()}else if(a=='open')openNote(id);else if(a=='new')openNote();
 else if(a=='th'){lt=document.documentElement.dataset.theme=='dark'?'light':'dark';try{localStorage.setItem('th',lt)}catch(e){}render()}
 else if(a=='dk'){R.dk={cards:((R.dk&&R.dk.cards)||[]).map(c=>({...c})),quiz:((R.dk&&R.dk.quiz)||[]).map(q=>({...q,opts:[...q.opts]}))};R.dt=R.m=='quiz'?'quiz':'cards';show('deck')}
-else if(a=='dkx'){await saveDeck();R.dk=cleanDeck(R.dk);R.g=null;R.c=null;R.z=null;show('cards')}
+else if(a=='dkx'){if(!await saveDeck()&&!confirm('Nie udało się zapisać zmian. Wyjść bez zapisu?'))return;R.dk=cleanDeck(R.dk);R.g=null;R.c=null;R.z=null;show('cards')}
 else if(a=='dkc'){R.dt=k;dkRender()}
 else if(a=='dac'){R.dk.cards.push({q:'',a:''});dkRender();dkSched();setTimeout(()=>{const x=document.querySelectorAll('[data-dk=cq]');x[x.length-1]?.focus()},50)}
 else if(a=='dup'){const c=R.dk.cards[+t.dataset.i];R.dk.cards.splice(+t.dataset.i+1,0,{...c});dkRender();dkSched()}
