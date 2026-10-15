@@ -7,6 +7,7 @@ const J = (o, s = 200) =>
     headers: { "content-type": "application/json", "cache-control": "no-store" },
   });
 
+// Hasło admina jest w zmiennej środowiskowej ADMIN_PASSWORD (Netlify → Environment variables)
 const okPw = (req) => {
   const p = process.env.ADMIN_PASSWORD || "";
   const g = req.headers.get("x-admin-password") || "";
@@ -20,7 +21,7 @@ const str = (v, n) => String(v ?? "").slice(0, n);
 const ID = /^[\w-]{1,40}$/;
 
 export default async (req) => {
-  const store = getStore("notatki");
+  const store = getStore({ name: "notatki", consistency: "strong" });
   const parts = new URL(req.url).pathname.replace(/^\/api\/?/, "").split("/").filter(Boolean);
   const m = req.method;
 
@@ -40,6 +41,35 @@ export default async (req) => {
       }
     }
 
+    if (parts[0] === "deck" && parts[1]) {
+      if (!ID.test(parts[1])) return J({ error: "bad id" }, 400);
+      if (m === "GET") return J((await store.get("d:" + parts[1], { type: "json" })) || { cards: [], quiz: [] });
+      if (m === "PUT") {
+        if (!okPw(req)) return J({ error: "pw" }, 401);
+        const b = await req.json();
+        const cards = (Array.isArray(b.cards) ? b.cards : [])
+          .map((c) => ({ q: str(c && c.q, 400), a: str(c && c.a, 800) }))
+          .filter((c) => c.q && c.a)
+          .slice(0, 300);
+        const quiz = (Array.isArray(b.quiz) ? b.quiz : [])
+          .map((q) => {
+            const raw = Array.isArray(q && q.opts) ? q.opts.map((o) => str(o, 300)) : [];
+            const correct = Number.isInteger(q && q.ans) ? raw[q.ans] : "";
+            const opts = raw.filter(Boolean).slice(0, 6);
+            return { q: str(q && q.q, 500), opts, ans: correct ? opts.indexOf(correct) : -1, ex: str(q && q.ex, 500) };
+          })
+          .filter((q) => q.q && q.opts.length >= 2 && q.ans >= 0)
+          .slice(0, 200);
+        await store.setJSON("d:" + parts[1], { cards, quiz, ts: Date.now() });
+        return J({ ok: 1, cards: cards.length, quiz: quiz.length });
+      }
+    }
+
+    if (parts[0] === "ai" && parts[1] && m === "GET") {
+      if (!ID.test(parts[1])) return J({ error: "bad id" }, 400);
+      return J((await store.get("g:" + parts[1], { type: "json" })) || { status: "none" });
+    }
+
     if (parts[0] === "notes") {
       const id = parts[1];
       if (!id && m === "GET") {
@@ -57,6 +87,8 @@ export default async (req) => {
         if (m === "DELETE") {
           await store.delete("n:" + id);
           await store.delete("m:" + id);
+          await store.delete("g:" + id);
+          await store.delete("d:" + id);
           return J({ ok: 1 });
         }
         const b = await req.json();
@@ -70,6 +102,8 @@ export default async (req) => {
           tx: h.replace(/<[^>]*>/g, " ").slice(0, 3000),
           im: (h.match(/<img/g) || []).length,
         };
+        const old = await store.get("n:" + id, { type: "json" });
+        if (old && old.h !== h) await store.delete("g:" + id); // treść się zmieniła – talia AI jest nieaktualna
         await store.setJSON("n:" + id, note);
         await store.setJSON("m:" + id, meta);
         return J({ ok: 1 });

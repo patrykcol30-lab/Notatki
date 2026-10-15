@@ -55,7 +55,7 @@ export const parseDeck = (out) => {
   return { cards, quiz };
 };
 
-// Dostawcy AI: najpierw darmowy Google Gemini (klucz z AI Studio), a jeśli go nie ma – Claude (płatny).
+// Dostawcy AI: najpierw darmowy Google Gemini (klucz z AI Studio), a jeśli go nie ma  1�7 Claude (płatny).
 async function callGemini(user) {
   const models = [process.env.GEMINI_MODEL, "gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-flash-latest"].filter(Boolean);
   let last = "gemini";
@@ -78,7 +78,7 @@ async function callGemini(user) {
       continue;
     }
     last = "gemini " + r.status;
-    if (![400, 403, 404, 429, 503].includes(r.status)) break; // inny błąd – nie ma sensu próbować kolejnych modeli
+    if (![400, 403, 404, 429, 503].includes(r.status)) break; // inny błąd  1�7 nie ma sensu próbować kolejnych modeli
   }
   throw new Error(last);
 }
@@ -110,7 +110,7 @@ export default async (req) => {
   try { id = (await req.json()).id; } catch { return new Response("", { status: 400 }); }
   if (!/^[\w-]{1,40}$/.test(String(id))) return new Response("", { status: 400 });
 
-  const store = getStore("notatki");
+  const store = getStore({ name: "notatki", consistency: "strong" });
   try {
     const note = await store.get("n:" + id, { type: "json" });
     if (!note) throw new Error("nf");
