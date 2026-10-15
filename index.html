@@ -34,7 +34,7 @@ h1{margin:0;font-size:clamp(28px,6vw,44px);background:linear-gradient(90deg,var(
 [data-ds=compact] .ev{padding:9px;margin-bottom:6px}[data-ds=compact] .ev .ic{width:40px;height:40px}[data-ds=roomy] .ev{padding:22px;margin-bottom:14px}
 .ev .ic{width:50px;height:50px;display:grid;place-items:center;border-radius:16px;background:color-mix(in srgb,var(--c) 28%,transparent);color:var(--c);flex:none}.ev .ic .i{width:26px;height:26px}
 .m{position:fixed;inset:0;z-index:80;background:rgba(5,6,20,.6);display:grid;place-items:center;padding:12px;animation:pop .2s both}
-.mb{width:min(560px,100%);max-height:92vh;overflow:auto;padding:18px;background:var(--sf);color:var(--tx);animation:pop .3s both}.mb h2{margin-top:0}
+.mb{width:min(560px,100%);max-height:92vh;overflow:auto;padding:18px;background:var(--sf)!important;color:var(--tx);animation:pop .3s both}.mb h2{margin-top:0}
 label{display:block;margin:9px 0;font-size:13px;color:var(--mu)}
 input,textarea,select{width:100%;margin-top:4px;font:inherit;color:var(--tx);background:rgba(255,255,255,.1);border:1px solid var(--gb);border-radius:12px;padding:10px 12px;outline:none}
 input[type=range],input[type=checkbox]{padding:0;width:auto}input[type=range]{width:100%}input[type=color]{height:40px;padding:3px}
@@ -101,7 +101,7 @@ select option{color:#111}
 .lbx{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.93);overflow:auto;display:flex;cursor:zoom-in;animation:pop .2s both}.lbx img{margin:auto;max-width:100%;max-height:100vh}.lbx.z{cursor:zoom-out}.lbx.z img{max-width:none;max-height:none;width:230%}
 .sp{position:fixed;inset:0;z-index:99;background:var(--bg);display:grid;place-items:center;transition:opacity .5s}.sp.out{opacity:0;pointer-events:none}
 .sp .lg{font-size:clamp(38px,12vw,84px);font-weight:800;display:flex;flex-wrap:wrap;justify-content:center}.sp span{animation:pop .6s calc(var(--i)*60ms) both;background:linear-gradient(var(--b1),var(--b2));-webkit-background-clip:text;background-clip:text;color:transparent}
-.toast{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:110;padding:11px 18px;background:var(--sf);color:var(--tx);animation:pop .25s both}
+.toast{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:110;padding:11px 18px;background:var(--sf)!important;color:var(--tx);animation:pop .25s both}
 .rp{position:absolute;border-radius:50%;background:rgba(255,255,255,.45);transform:scale(0);animation:rp .6s ease-out forwards;pointer-events:none}@keyframes rp{to{transform:scale(1);opacity:0}}
 .cf{position:fixed;z-index:120;width:9px;height:14px;border-radius:2px;pointer-events:none;animation:cf 1.4s cubic-bezier(.2,.7,.4,1) forwards}@keyframes cf{to{transform:translate(var(--x),var(--y)) rotate(var(--rt));opacity:0}}
 #pr{display:none}body.printing>*:not(#pr){display:none!important}body.printing{background:#fff!important;padding:0}body.printing #pr{display:block;-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -139,6 +139,7 @@ list:'<path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle 
 olist:'<path d="M10 6h10M10 12h10M10 18h10M4 5l1.5-1v5M3.5 14h3l-3 4h3"/>',head:'<path d="M6 4v16M18 4v16M6 12h12"/>',para:'<path d="M13 4v16M17 4v16M13 4H9a4 4 0 0 0 0 8h4"/>',
 eraser:'<path d="M4 20h16M7.5 16l-3-3a2 2 0 0 1 0-3L12 3.5a2 2 0 0 1 3 0L19.5 8a2 2 0 0 1 0 3L13 17.5z"/>',nohl:'<circle cx="12" cy="12" r="8"/><path d="M6.3 6.3l11.4 11.4"/>',
 deck:'<rect x="3" y="7" width="14" height="12" rx="2"/><path d="M7 7V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2M10 10v6M7 13h6"/>',
+upload:'<path d="M12 16V4M7 9l5-5 5 5M4 20h16"/>',download:'<path d="M12 4v12M7 11l5 5 5-5M4 20h16"/>',
 spark:'<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/>',
 search:'<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>',
 test:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>',
@@ -284,12 +285,63 @@ const base=()=>R.base||(R.base=R.ai?aiDeck(R.ai):gen(R.e));
 const ownQ=q=>{if(q.opts.length==2&&q.opts[0]=='Prawda'&&q.opts[1]=='Fałsz')return{q:q.q,opts:[...q.opts],ans:q.ans,ex:q.ex||''};const a=q.opts[q.ans],o=shuf(q.opts);return{q:q.q,opts:o,ans:o.indexOf(a),ex:q.ex||''}};
 function mkDeck(){const d=R.dk||{cards:[],quiz:[]},oc=(d.cards||[]).length,oq=(d.quiz||[]).length,b=oc&&oq?null:base(),sr=R.ai?'ai':'auto';return{cards:oc?d.cards.map((c,i)=>({q:c.q,a:c.a,k:'Własna',id:i})):b.cards,quiz:oq?shuf(d.quiz.map(ownQ)):b.quiz,src:{cards:oc?'own':sr,quiz:oq?'own':sr}}}
 const tag=k=>{const x=R.g&&R.g.src&&R.g.src[k];return x=='own'?' <small style="font-size:13px;color:var(--rac)">własne</small>':x=='ai'?' <small style="font-size:13px;color:var(--rac)">AI</small>':''};
+const PROMPT=`Jesteś nauczycielem. Na podstawie notatki poniżej przygotuj fiszki i pytania quizowe do nauki.
+
+Zasady:
+- Używaj wyłącznie informacji z notatki, niczego nie dodawaj z zewnątrz.
+- Pytania mają być zrozumiałe bez zaglądania do notatki.
+- Fiszki: 15-30 sztuk, krótkie pytanie i zwięzła odpowiedź.
+- Quiz: 10-20 pytań, każde z 4 odpowiedziami (jedna poprawna, błędne wiarygodne i podobnej długości) oraz krótkim wyjaśnieniem. Możesz dodać kilka pytań prawda/fałsz (odpowiedzi: "Prawda" i "Fałsz").
+- Język: polski.
+
+Odpowiedz WYŁĄCZNIE jednym blokiem JSON (bez komentarza przed i po) w dokładnie takim formacie:
+{
+  "fiszki": [ { "pytanie": "...", "odpowiedz": "..." } ],
+  "quiz": [ { "pytanie": "...", "odpowiedzi": ["...", "...", "...", "..."], "poprawna": "dokładny tekst poprawnej odpowiedzi", "wyjasnienie": "..." } ]
+}
+Pole "poprawna" musi być identyczne z jedną z odpowiedzi.`;
+const noteText=()=>{const r=norm(clean(R.e.h));return (R.e.ti?R.e.ti+'\n':'')+blocks(r).map(b=>(b.e.tagName=='LI'?'- ':'')+b.t).join('\n')};
+function parseImport(raw){let t=String(raw||'').trim();if(!t)return null;
+const fence=t.match(/```(?:json|JSON)?\s*([\s\S]*?)```/);if(fence)t=fence[1].trim();
+let o=null;const tryJ=(a,b)=>{const i=t.indexOf(a),k=t.lastIndexOf(b);if(i>=0&&k>i){try{return JSON.parse(t.slice(i,k+1))}catch(e){}}return null};
+o=tryJ('{','}')||tryJ('[',']');
+const pick=(x,...ks)=>{for(const k of ks)if(x&&x[k]!=null&&x[k]!=='')return x[k];return ''};
+const S=v=>typeof v=='string'?v.trim():v==null?'':(typeof v=='object'?S(pick(v,'tekst','text','opis','value')):String(v).trim());
+let cards=[],quiz=[],skipped=0;
+const hasOpts=x=>x&&typeof x=='object'&&pick(x,'odpowiedzi','opcje','options','opts','answers','choices','warianty')!=='';
+let cs=[],qs=[];
+if(Array.isArray(o)){o.forEach(x=>(hasOpts(x)?qs:cs).push(x))}
+else if(o&&typeof o=='object'){cs=pick(o,'fiszki','flashcards','cards','fiszka','karty')||[];qs=pick(o,'quiz','pytania','questions','test','pytania_quizowe')||[]}
+else{t.split(/\r?\n/).forEach(l=>{const m=l.match(/^\s*(?:[-*•]|\d+[.)])?\s*(.+?)\s*(?:::|=>|\t)\s*(.+)$/);if(m)cs.push({q:m[1],a:m[2]})})}
+(Array.isArray(cs)?cs:[]).forEach(c=>{const q=S(pick(c,'pytanie','q','question','front','przod','awers','termin','pojecie','pojęcie')),a=S(pick(c,'odpowiedz','odpowiedź','a','answer','back','tyl','rewers','definicja'));if(q&&a)cards.push({q,a});else skipped++});
+(Array.isArray(qs)?qs:[]).forEach(x=>{const q=S(pick(x,'pytanie','q','question','tresc','treść'));let ro=pick(x,'odpowiedzi','opcje','options','opts','answers','choices','warianty');ro=Array.isArray(ro)?ro:[];
+let ans=-1;const opts=ro.map((v,i)=>{if(v&&typeof v=='object'&&(v.poprawna===true||v.correct===true||v.poprawna==='tak'))ans=i;return S(v)});
+let ok=opts.filter(Boolean);if(ok.length!=opts.length&&ans>=0){ans=opts.slice(0,ans+1).filter(Boolean).length-1}
+let pre=ok.length>=2&&ok.every((v,i)=>new RegExp('^'+String.fromCharCode(65+i)+'[).:]\\s+','i').test(v));if(pre)ok=ok.map(v=>v.replace(/^[A-Fa-f][).:]\s+/,''));
+if(ans<0){let c=pick(x,'poprawna','poprawna_odpowiedz','poprawnaOdpowiedz','prawidlowa','correct','correct_answer','correctAnswer','answer','ans');
+if(typeof c=='number')ans=c===0?0:(c>=1&&c<=ok.length?c-1:-1);
+else{c=S(c);if(c){ans=ok.findIndex(v=>v.toLowerCase()==c.toLowerCase());if(ans<0&&/^[A-Fa-f][).:]?$/.test(c)){const n=c.toUpperCase().charCodeAt(0)-65;ans=n<ok.length?n:-1}
+if(ans<0&&/^\d+$/.test(c)){const n=+c;ans=n===0?0:(n<=ok.length?n-1:-1)}
+if(ans<0){const m=c.match(/^[A-Fa-f][).:]\s*(.+)$/);if(m)ans=ok.findIndex(v=>v.toLowerCase()==m[1].trim().toLowerCase())}}}}
+if(q&&ok.length>=2&&ok.length<=6&&ans>=0&&ans<ok.length)quiz.push({q,opts:ok,ans,ex:S(pick(x,'wyjasnienie','wyjaśnienie','explanation','ex','uzasadnienie'))});else skipped++});
+return{cards,quiz,skipped}}
+const impInfo=p=>!p?'Wklej odpowiedź AI albo wybierz plik.':(p.cards.length||p.quiz.length)?`Znaleziono: ${p.cards.length} fiszek, ${p.quiz.length} pytań quizu${p.skipped?` (pominięto ${p.skipped} niepełnych)`:''}.`:'Nie rozpoznano fiszek ani pytań. Sprawdź, czy to format z promptu (JSON).';
+function impPrev(){const t=$('#imp-t'),i=$('#imp-s');if(!t||!i)return;const p=parseImport(t.value);i.textContent=impInfo(p);i.style.color=p&&(p.cards.length||p.quiz.length)?'#22c55e':''}
+function impModal(){const m=modal(`<h2>Import fiszek i quizu</h2><p class="mt" style="margin-top:-6px">1) Skopiuj prompt razem z notatką i wklej go do dowolnego AI (ChatGPT, Gemini, Claude…).<br>2) Odpowiedź AI wklej poniżej albo wczytaj z pliku.</p>
+<div class="row" style="justify-content:flex-start;margin:0 0 10px"><button class="btn" data-a="ipc">${ic('copy')}Prompt + notatka</button><button class="btn" data-a="ipp">${ic('copy')}Sam prompt</button></div>
+<textarea id="imp-t" rows="8" placeholder="Wklej tu odpowiedź AI (JSON z fiszkami i quizem)…"></textarea>
+<div class="row" style="justify-content:flex-start;margin:8px 0"><label class="btn" style="margin:0;color:var(--tx)">${ic('upload')}Wybierz plik<input type="file" id="imp-f" accept=".json,.txt,.md,application/json,text/plain" hidden></label></div>
+<div id="imp-s" class="mt">Wklej odpowiedź AI albo wybierz plik.</div>
+<label><input type="checkbox" id="imp-r"> Zastąp istniejące fiszki i pytania (zamiast dopisać)</label>
+<div class="row"><button class="btn" data-a="sc">Anuluj</button><button class="btn pr" data-a="imgo">Importuj</button></div>`);
+$('#imp-f').onchange=async e=>{const f=e.target.files[0];if(!f)return;$('#imp-t').value=await f.text();impPrev()}}
+function expDeck(){const d=cleanDeck(R.dk);return{fiszki:d.cards.map(c=>({pytanie:c.q,odpowiedz:c.a})),quiz:d.quiz.map(q=>({pytanie:q.q,odpowiedzi:q.opts,poprawna:q.opts[q.ans],wyjasnienie:q.ex}))}}
 const cleanDeck=d=>({cards:d.cards.map(c=>({q:c.q.trim(),a:c.a.trim()})).filter(c=>c.q&&c.a),quiz:d.quiz.map(q=>{const ct=(q.opts[q.ans]||'').trim(),opts=q.opts.map(o=>o.trim()).filter(Boolean);return{q:q.q.trim(),opts,ans:ct?opts.indexOf(ct):-1,ex:(q.ex||'').trim()}}).filter(q=>q.q&&q.opts.length>=2&&q.ans>=0)});
 let dkT;const dkSched=()=>{clearTimeout(dkT);dkT=setTimeout(saveDeck,800);setStat('Zapisywanie…')};
 async function saveDeck(){clearTimeout(dkT);if(!R||!R.dk)return;setStat('Zapisywanie…');try{await api('deck/'+R.e.id,{method:'PUT',body:JSON.stringify(cleanDeck(R.dk))});setStat('Zapisano')}catch(x){setStat('Błąd zapisu')}}
 function dkRender(){const sc=$('#rd .rsc'),y=sc.scrollTop;$('#rd .rbody').outerHTML=deckHTML();sc.scrollTop=y}
 function deckHTML(){const d=R.dk,t=R.dt||'cards';
-const hd=`<div class="rhd"><h2>Edytor</h2><span id="sv"></span></div><div class="chips" style="margin-bottom:8px"><button class="chip ${t=='cards'?'on':''}" data-a="dkc" data-k="cards">${ic('cards')}Fiszki (${d.cards.length})</button><button class="chip ${t=='quiz'?'on':''}" data-a="dkc" data-k="quiz">${ic('help')}Quiz (${d.quiz.length})</button></div><p class="mt" style="margin:0 0 4px">Zapisuje się samo. Własne fiszki lub pytania zastępują automatyczne i AI w danej zakładce.</p>`;
+const hd=`<div class="rhd"><h2>Edytor</h2><span id="sv"></span></div><div class="chips" style="margin-bottom:8px"><button class="chip ${t=='cards'?'on':''}" data-a="dkc" data-k="cards">${ic('cards')}Fiszki (${d.cards.length})</button><button class="chip ${t=='quiz'?'on':''}" data-a="dkc" data-k="quiz">${ic('help')}Quiz (${d.quiz.length})</button></div><div class="chips" style="margin:2px 0 8px"><button class="rbtn sm" data-a="dki">${ic('upload')}Importuj z AI / pliku</button><button class="rbtn sm" data-a="dexp">${ic('download')}Pobierz plik</button></div><p class="mt" style="margin:0 0 4px">Zapisuje się samo. Własne fiszki lub pytania zastępują automatyczne i AI w danej zakładce.</p>`;
 const top=(n,i,c,d2)=>`<div class="eh"><b>${n}</b><span style="flex:1"></span><button class="rb" data-a="${c}" data-i="${i}" title="Powiel">${ic('copy')}</button><button class="rb dg" data-a="${d2}" data-i="${i}" title="Usuń">${ic('trash')}</button></div>`;
 if(t=='cards')return `<div class="rbody">${hd}${d.cards.map((c,i)=>`<div class="ei">${top(i+1,i,'dup','ddc')}<textarea rows="2" data-dk="cq" data-i="${i}" placeholder="Pytanie lub pojęcie">${esc(c.q)}</textarea><textarea rows="2" data-dk="ca" data-i="${i}" placeholder="Odpowiedź">${esc(c.a)}</textarea></div>`).join('')||'<div class="empty">Brak własnych fiszek. Dodaj pierwszą albo wczytaj wygenerowane (ikona iskier na górze).</div>'}<div class="rrow"><button class="rbtn pr" data-a="dac">${ic('plus')}Dodaj fiszkę</button></div></div>`;
 return `<div class="rbody">${hd}${d.quiz.map((q,i)=>`<div class="ei">${top(i+1,i,'dqp','dqd')}<textarea rows="2" data-dk="qq" data-i="${i}" placeholder="Pytanie">${esc(q.q)}</textarea>${q.opts.map((o,j)=>`<div class="eo"><button class="okb ${q.ans==j?'on':''}" data-a="dans" data-i="${i}" data-j="${j}" title="Zaznacz jako poprawną">${ic('check')}</button><input data-dk="qo" data-i="${i}" data-j="${j}" value="${esc(o)}" placeholder="Odpowiedź ${j+1}"><button class="rb" data-a="dro" data-i="${i}" data-j="${j}" title="Usuń odpowiedź">${ic('x')}</button></div>`).join('')}${q.opts.length<6?`<div style="margin:0 0 8px"><button class="rbtn sm" data-a="dao" data-i="${i}">${ic('plus')}Odpowiedź</button></div>`:''}<input data-dk="qe" data-i="${i}" value="${esc(q.ex||'')}" placeholder="Wyjaśnienie po odpowiedzi (opcjonalnie)" style="margin-bottom:8px"></div>`).join('')||'<div class="empty">Brak własnych pytań. Dodaj pierwsze albo wczytaj wygenerowane (ikona iskier na górze).</div>'}<div class="rrow"><button class="rbtn pr" data-a="daq">${ic('plus')}Pytanie z odpowiedziami</button><button class="rbtn" data-a="dat">${ic('plus')}Prawda / fałsz</button></div></div>`}
@@ -385,6 +437,10 @@ else if(a=='dqd'){R.dk.quiz.splice(+t.dataset.i,1);dkRender();dkSched()}
 else if(a=='dao'){R.dk.quiz[+t.dataset.i].opts.push('');dkRender();dkSched()}
 else if(a=='dro'){const q=R.dk.quiz[+t.dataset.i],j=+t.dataset.j;if(q.opts.length<=2)return toast('Pytanie musi mieć co najmniej 2 odpowiedzi');q.opts.splice(j,1);if(q.ans==j)q.ans=0;else if(q.ans>j)q.ans--;dkRender();dkSched()}
 else if(a=='dans'){R.dk.quiz[+t.dataset.i].ans=+t.dataset.j;dkRender();dkSched()}
+else if(a=='dki')impModal();
+else if(a=='ipc'||a=='ipp'){const tx=a=='ipc'?PROMPT+'\n\nNOTATKA:\n'+noteText():PROMPT;navigator.clipboard.writeText(tx).then(()=>toast(a=='ipc'?'Skopiowano prompt z notatką – wklej go do AI':'Skopiowano prompt'),()=>toast('Nie można skopiować'))}
+else if(a=='imgo'){const p=parseImport($('#imp-t').value);if(!p||!(p.cards.length||p.quiz.length))return toast('Nie rozpoznano fiszek ani pytań');if($('#imp-r').checked){R.dk.cards=[];R.dk.quiz=[]}R.dk.cards.push(...p.cards);R.dk.quiz.push(...p.quiz.map(q=>({q:q.q,opts:q.opts,ans:q.ans,ex:q.ex})));R.dt=p.quiz.length&&!p.cards.length?'quiz':'cards';closeM();dkRender();dkSched();toast('Zaimportowano: '+p.cards.length+' fiszek, '+p.quiz.length+' pytań')}
+else if(a=='dexp'){const e=expDeck();if(!e.fiszki.length&&!e.quiz.length)return toast('Nie ma jeszcze nic do pobrania');const b=new Blob([JSON.stringify(e,null,2)],{type:'application/json'}),l=document.createElement('a');l.href=URL.createObjectURL(b);l.download='fiszki-'+((R.e.ti||'notatka').replace(/[^\w\u0100-\u017f -]/g,'').trim()||'notatka')+'.json';l.click();toast('Pobrano plik')}
 else if(a=='dimp'){const b=base();if((R.dk.cards.length||R.dk.quiz.length)&&!confirm('Dopisać wygenerowane fiszki i pytania do tych, które już masz?'))return;R.dk.cards.push(...b.cards.map(c=>({q:c.q,a:c.a})));R.dk.quiz.push(...b.quiz.map(q=>({q:q.q,opts:[...q.opts],ans:q.ans,ex:q.ex||''})));dkRender();dkSched();toast('Wczytano – możesz je teraz edytować')}
 else if(a=='ai')genAI();else if(a=='rdc')closeRd();else if(a=='edit')show('edit');else if(a=='edc')edc();
 else if(a=='mode'){if(k=='cards')R.c=null;if(k=='quiz')R.z=null;show(k)}
@@ -412,6 +468,7 @@ else if(a=='set')sets();else if(a=='sc')closeM()});
 document.addEventListener('dblclick',ev=>{const im=ev.target.closest('.nt img');if(im&&R&&R.m=='edit')lbx(im.src)});
 document.addEventListener('input',ev=>{const t=ev.target,D=t.dataset;
 if(t.id=='q'){qv=t.value;$('#lst').innerHTML=list()}
+else if(t.id=='imp-t')impPrev();
 else if(D.dk){const i=+D.i,j=+D.j,d=R.dk,k=D.dk;if(k=='cq')d.cards[i].q=t.value;else if(k=='ca')d.cards[i].a=t.value;else if(k=='qq')d.quiz[i].q=t.value;else if(k=='qo')d.quiz[i].opts[j]=t.value;else if(k=='qe')d.quiz[i].ex=t.value;if(t.tagName=='TEXTAREA'){t.style.height='auto';t.style.height=t.scrollHeight+'px'}dkSched()}
 else if(t.id=='e-h')chg();
 else if(D.p){const v=t.type=='checkbox'?(t.checked?1:0):t.type=='range'?+t.value:t.value;P[D.p]=v;savP();ap();const o=$('#rd');if(o){o.className=rcls();o.style.cssText=rvars()}if(D.p=='sz'){const l=$('#pv-sz');if(l)l.textContent=v}if(R&&R.m=='read'&&(D.p=='au'||D.p=='dc')){const y=o.querySelector('.rsc').scrollTop;show('read');o.querySelector('.rsc').scrollTop=y}else if(!R&&(D.p=='cs'||D.p=='ds'||D.p=='ac'))ap()}
