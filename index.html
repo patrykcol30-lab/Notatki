@@ -1,5 +1,7 @@
 <!doctype html>
 <html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Notatki+</title>
+<link rel="manifest" href="/manifest.json"><meta name="theme-color" content="#0b0d1f"><link rel="icon" type="image/png" href="/icon-192.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Notatki+"><meta name="apple-mobile-web-app-status-bar-style" content="default">
 <style>
 :root{--tx:#f4f6ff;--mu:#b4bbdc;--bg:#0b0d1f;--sf:#191c3a;--gb:rgba(255,255,255,.2);--ac:#7c8cff;--r:24px}
 :root[data-theme=light]{--tx:#16182e;--mu:#4d5378;--bg:#e8ecff;--sf:#f6f8ff;--gb:rgba(255,255,255,.9)}
@@ -177,7 +179,7 @@ return subjects().filter(k=>g[k]).map(k=>`<h2 class="sg">${esc(k)}<small>${g[k].
 function notes(){if(sj!='all'&&!subjects().includes(sj))sj='all';
 return `<div class="sr">${ic('search')}<input id="q" placeholder="Szukaj w notatkach…" value="${esc(qv)}"></div><div class="lb">Przedmiot</div><div class="chips sc"><button class="chip ${sj=='all'?'on':''}" data-a="sj" data-k="all">Wszystkie</button>${subjects().map(s=>`<button class="chip ${sj==s?'on':''}" data-a="sj" data-k="${esc(s)}">${esc(s)}</button>`).join('')}</div><div class="lb">Rodzaj</div><div class="chips sc"><button class="chip ${flt=='all'?'on':''}" data-a="flt" data-k="all">Wszystko</button>${Object.entries(TY).map(([k,t])=>`<button class="chip ${flt==k?'on':''}" data-a="flt" data-k="${k}">${ic(t[0])}${t[1]}</button>`).join('')}</div><div id="lst" style="margin-top:6px">${list()}</div>`}
 function render(an){ap();const a=$('#app');a.className='wrap'+(an?' in':'');const dk=document.documentElement.dataset.theme=='dark';
-a.innerHTML=`<header><div><h1>${esc(S.st.nm)}</h1><p class="sub">Sprawdziany, kartkówki i odpowiedzi ustne</p></div><div class="row" style="margin:0"><button class="btn ib" data-a="th" aria-label="Motyw">${ic(dk?'sun':'moon')}</button><button class="btn ib" data-a="pref" aria-label="Personalizacja">${ic('palette')}</button>${ED()?`<button class="btn ib" data-a="set" aria-label="Ustawienia">${ic('sliders')}</button><button class="btn ib" data-a="out" aria-label="Wyloguj">${ic('unlock')}</button>`:`<button class="btn ib" data-a="login" aria-label="Panel admina">${ic('lock')}</button>`}</div></header><div style="height:10px"></div>${S.err?'<div class="empty g">Nie można połączyć z serwerem. Odśwież stronę.</div>':notes()}${ED()?`<button class="btn pr fab" data-a="new">${ic('plus')}<span>Nowa notatka</span></button>`:''}`}
+a.innerHTML=`<header><div><h1>${esc(S.st.nm)}</h1><p class="sub">Sprawdziany, kartkówki i odpowiedzi ustne</p></div><div class="row" style="margin:0">${ip?`<button class="btn ib" data-a="inst" aria-label="Zainstaluj aplikację">${ic('download')}</button>`:''}<button class="btn ib" data-a="th" aria-label="Motyw">${ic(dk?'sun':'moon')}</button><button class="btn ib" data-a="pref" aria-label="Personalizacja">${ic('palette')}</button>${ED()?`<button class="btn ib" data-a="set" aria-label="Ustawienia">${ic('sliders')}</button><button class="btn ib" data-a="out" aria-label="Wyloguj">${ic('unlock')}</button>`:`<button class="btn ib" data-a="login" aria-label="Panel admina">${ic('lock')}</button>`}</div></header><div style="height:10px"></div>${S.err?'<div class="empty g">Nie można połączyć z serwerem. Odśwież stronę.</div>':notes()}${ED()?`<button class="btn pr fab" data-a="new">${ic('plus')}<span>Nowa notatka</span></button>`:''}`}
 /* ---------- ZAPIS ---------- */
 const setStat=t=>{const e=$('#sv');if(e)e.textContent=t};
 const sched=()=>{dirty=1;clearTimeout(st_);st_=setTimeout(put,800);setStat('Zapisywanie…')};
@@ -428,6 +430,7 @@ const c=ev.target.closest('[data-c]');if(c){document.execCommand(c.dataset.c,fal
 const t=ev.target.closest('[data-a]');if(!t)return;const a=t.dataset.a,k=t.dataset.k,id=t.dataset.id;
 if(a=='flt'){flt=k;render()}else if(a=='sj'){sj=k;render()}else if(a=='open')openNote(id);else if(a=='new')openNote();
 else if(a=='th'){lt=document.documentElement.dataset.theme=='dark'?'light':'dark';try{localStorage.setItem('th',lt)}catch(e){}render()}
+else if(a=='inst'){if(ip){ip.prompt();ip.userChoice.then(()=>{ip=null;render()})}}
 else if(a=='dk'){R.dk={cards:((R.dk&&R.dk.cards)||[]).map(c=>({...c})),quiz:((R.dk&&R.dk.quiz)||[]).map(q=>({...q,opts:[...q.opts]}))};R.dt=R.m=='quiz'?'quiz':'cards';show('deck')}
 else if(a=='dkx'){if(!await saveDeck()&&!confirm('Nie udało się zapisać zmian. Wyjść bez zapisu?'))return;R.dk=cleanDeck(R.dk);R.g=null;R.c=null;R.z=null;show('cards')}
 else if(a=='dkc'){R.dt=k;dkRender()}
@@ -484,6 +487,10 @@ else if(D.s){S.st[D.s]=t.type=='checkbox'?(t.checked?1:0):t.type=='range'?+t.val
 document.addEventListener('paste',e=>{if(e.target.id=='e-h'){e.preventDefault();document.execCommand('insertText',false,e.clipboardData.getData('text/plain'))}});
 document.addEventListener('keydown',e=>{if(e.key=='Enter'&&e.target.id=='pw')lg();if(R&&!$('.m')&&!/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)&&!e.target.isContentEditable){if(R.m=='cards'&&R.c&&R.c.q.length){if(e.key==' '||e.key=='Enter'){e.preventDefault();$('.fcc')?.classList.toggle('f')}else if(e.key=='ArrowRight')rate('ok');else if(e.key=='ArrowLeft')rate('no');else if(e.key=='ArrowDown')rate('hd')}else if(R.m=='quiz'&&R.z&&R.z.it){if(/^[1-4]$/.test(e.key))qans(+e.key-1);else if(e.key=='Enter'&&R.z.a>=0)document.querySelector('[data-a=qn]')?.click()}}if(e.key=='Escape'){const l=$('.lbx');if(l)l.remove();else if($('.m'))closeM();else if(R)R.m=='edit'?edc():closeRd()}});
 function splash(){if(!S.st.an)return;const s=document.createElement('div');s.className='sp';s.innerHTML='<div class="lg">'+[...S.st.nm].map((c,i)=>`<span style="--i:${i}">${esc(c)}</span>`).join('')+'</div>';document.body.append(s);setTimeout(()=>s.classList.add('out'),1300);setTimeout(()=>s.remove(),1900)}
+let ip=null;
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();ip=e;if(!R&&$('#app'))render()});
+addEventListener('appinstalled',()=>{ip=null;if(!R)render();toast('Aplikacja zainstalowana')});
+if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));
 ap();render(1);splash();load();
 setInterval(()=>{if(!R&&!document.hidden&&document.activeElement?.id!='q')load(1)},30000);
 </script></body></html>
