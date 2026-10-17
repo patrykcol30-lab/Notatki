@@ -20,6 +20,35 @@ const TYPES = ["test", "quiz", "oral", "event", "note"];
 const str = (v, n) => String(v ?? "").slice(0, n);
 const ID = /^[\w-]{1,40}$/;
 
+// ---- E8: przedmioty -> tematy -> zadania ----
+const T8 = ["choice", "tf", "num", "open"];
+const rid = () => Math.random().toString(36).slice(2, 10);
+const task8 = (t) => {
+  t = t || {};
+  const pairs = (Array.isArray(t.opts) ? t.opts : []).map((x, i) => ({ o: str(x, 400), w: str(Array.isArray(t.exo) ? t.exo[i] : "", 800) }));
+  const correct = Number.isInteger(t.ans) && pairs[t.ans] ? pairs[t.ans].o : "";
+  const kept = pairs.filter((p) => p.o).slice(0, 6);
+  const opts = kept.map((p) => p.o);
+  return {
+    id: ID.test(String(t.id)) ? t.id : rid(),
+    type: T8.includes(t.type) ? t.type : "choice",
+    kind: t.kind === "cw" ? "cw" : "cke",
+    q: str(t.q, 3000),
+    img: typeof t.img === "string" && /^data:image\/(jpeg|png|webp);base64,/.test(t.img) && t.img.length < 700000 ? t.img : "",
+    opts,
+    exo: kept.map((p) => p.w),
+    ans: correct ? opts.indexOf(correct) : -1,
+    st: (Array.isArray(t.st) ? t.st : []).map((x) => ({ t: str(x && x.t, 500), v: !!(x && x.v), w: str(x && x.w, 800) })).filter((x) => x.t).slice(0, 8),
+    num: str(t.num, 120),
+    sol: str(t.sol, 3000),
+    ex: str(t.ex, 3000),
+    src: str(t.src, 80),
+    pts: Math.max(0, Math.min(20, +t.pts || 0)),
+  };
+};
+const valid8 = (o) =>
+  o.q && (o.type === "choice" ? o.opts.length >= 2 && o.ans >= 0 : o.type === "tf" ? o.st.length >= 1 : o.type === "num" ? !!o.num : !!(o.sol || o.ex));
+
 export default async (req) => {
   const store = getStore({ name: "notatki", consistency: "strong" });
   const parts = new URL(req.url).pathname.replace(/^\/api\/?/, "").split("/").filter(Boolean);
@@ -35,9 +64,56 @@ export default async (req) => {
         const b = await req.json();
         await store.setJSON("settings", {
           nm: str(b.nm, 40), ac: str(b.ac, 9), bg: str(b.bg, 12), th: str(b.th, 6),
-          ft: str(b.ft, 8), an: b.an ? 1 : 0, r: Math.max(0, Math.min(40, +b.r || 24)),
+          ft: str(b.ft, 8), mt: str(b.mt, 80), an: b.an ? 1 : 0, r: Math.max(0, Math.min(40, +b.r || 24)),
         });
         return J({ ok: 1 });
+      }
+    }
+
+    if (parts[0] === "job" && parts[1] && m === "GET") {
+      if (!/^[\w-]{1,60}$/.test(parts[1])) return J({ error: "bad id" }, 400);
+      return J((await store.get("j:" + parts[1], { type: "json" })) || { status: "none" });
+    }
+
+    if (parts[0] === "e8") {
+      const sub = parts[1];
+      if (!sub && m === "GET") return J((await store.get("e8:tree", { type: "json" })) || { subjects: [] });
+      if (sub === "tree" && m === "PUT") {
+        if (!okPw(req)) return J({ error: "pw" }, 401);
+        const b = await req.json();
+        const old = (await store.get("e8:tree", { type: "json" })) || { subjects: [] };
+        const cnt = {}, oldIds = [];
+        old.subjects.forEach((s) => s.topics.forEach((t) => { cnt[t.id] = t.count || 0; oldIds.push(t.id); }));
+        const used = new Set();
+        const uid = (v) => { let i = ID.test(String(v)) ? v : rid(); while (used.has(i)) i = rid(); used.add(i); return i; };
+        const subjects = (Array.isArray(b.subjects) ? b.subjects : []).slice(0, 30).map((s) => ({
+          id: uid(s && s.id),
+          name: str(s && s.name, 80),
+          topics: (Array.isArray(s && s.topics) ? s.topics : []).slice(0, 100)
+            .map((t) => ({ id: uid(t && t.id), name: str(t && t.name, 100) })).filter((t) => t.name)
+            .map((t) => ({ ...t, count: cnt[t.id] || 0 })),
+        })).filter((s) => s.name);
+        const keep = new Set(subjects.flatMap((s) => s.topics.map((t) => t.id)));
+        for (const id of oldIds) if (!keep.has(id)) await store.delete("e8:t:" + id);
+        await store.setJSON("e8:tree", { subjects });
+        return J({ ok: 1, subjects });
+      }
+      if (sub === "t" && parts[2] && ID.test(parts[2])) {
+        const tid = parts[2];
+        if (m === "GET") return J((await store.get("e8:t:" + tid, { type: "json" })) || { tasks: [] });
+        if (m === "PUT") {
+          if (!okPw(req)) return J({ error: "pw" }, 401);
+          const tree = await store.get("e8:tree", { type: "json" });
+          let found = false;
+          if (tree) for (const s of tree.subjects) for (const t of s.topics) if (t.id === tid) found = true;
+          if (!found) return J({ error: "nf" }, 404);
+          const b = await req.json();
+          const tasks = (Array.isArray(b.tasks) ? b.tasks : []).map(task8).filter(valid8).slice(0, 200);
+          await store.setJSON("e8:t:" + tid, { tasks, ts: Date.now() });
+          for (const s of tree.subjects) for (const t of s.topics) if (t.id === tid) t.count = tasks.length;
+          await store.setJSON("e8:tree", tree);
+          return J({ ok: 1, count: tasks.length });
+        }
       }
     }
 
