@@ -485,6 +485,7 @@ const MODES=[['lekki','Delikatny','około 5–10 wyróżnień'],['standardowy','
 function fmtModal(){modal(`<h2>Formatowanie AI</h2><p class="mt" style="margin-top:-6px">AI wskaże w notatce najważniejsze fragmenty i wyróżni je wybranymi efektami. Zmiany możesz cofnąć.</p>
 <div class="lb" style="margin-top:6px">Tryb</div><div class="chips">${MODES.map(([k,n,d])=>`<button class="chip ${FM.mode==k?'on':''}" data-a="fmm" data-k="${k}" title="${d}">${n}</button>`).join('')}</div>
 <div class="lb">Efekty</div>${Object.entries(FXN).map(([k,n])=>`<label style="display:flex;gap:10px;align-items:center;margin:6px 0;color:var(--tx)"><input type="checkbox" data-fx="${k}" ${FM.fx[k]?'checked':''}> ${n}</label>`).join('')}
+<label style="display:flex;gap:10px;align-items:center;margin:10px 0 4px;color:var(--tx)"><input type="checkbox" data-fx="clr" ${FM.fx.clr!==0?'checked':''}> Najpierw usuń poprzednie wyróżnienia wybranych efektów</label>
 <div class="row" style="justify-content:flex-start"><button class="btn pr" data-a="fmgo">${ic('spark')}Użyj wbudowanego AI</button></div>
 <div class="lb">Albo dowolne inne AI</div><div class="row" style="justify-content:flex-start;margin:0 0 8px"><button class="btn" data-a="fmcp">${ic('copy')}Prompt + notatka</button></div>
 <textarea id="fm-t" rows="4" placeholder="Wklej tu odpowiedź AI (JSON ze znacznikami)…"></textarea><div id="fm-s" class="mt"></div>
@@ -509,18 +510,19 @@ NOTATKA:
 const stl=v=>{v=String(v||'').toLowerCase();return /fal|wav|podkre/.test(v)?'wavy':/duż|duz|large|big/.test(v)?'large':/śred|sred|med/.test(v)?'medium':/pogr|bold/.test(v)?'bold':/zakre|hl|high|marker/.test(v)?'hl':''};
 function parseMarksC(raw){let t=String(raw||'').trim();const f=t.match(/```(?:json|JSON)?\s*([\s\S]*?)```/);if(f)t=f[1].trim();let o=null;const i=t.indexOf('{'),k=t.lastIndexOf('}'),i2=t.indexOf('['),k2=t.lastIndexOf(']');try{if(i>=0&&k>i)o=JSON.parse(t.slice(i,k+1))}catch(e){}if(!o)try{if(i2>=0&&k2>i2)o=JSON.parse(t.slice(i2,k2+1))}catch(e){}
 const a=Array.isArray(o)?o:(o&&(o.marks||o.znaczniki||o.wyroznienia||o.fragmenty))||[];return(Array.isArray(a)?a:[]).map(m=>({text:String(m&&(m.text||m.tekst||m.fragment)||'').trim(),style:stl(m&&(m.style||m.styl||m.rodzaj||m.efekt))})).filter(m=>m.text.length>=2&&m.text.length<=80&&m.style)}
-function applyMarks(html,marks){const root=norm(clean(html));let n=0;const cls={wavy:'wv',medium:'tm',large:'tl'};
+function applyMarks(html,marks,clearEff){const root=norm(clean(html));let n=0;const cls={wavy:'wv',medium:'tm',large:'tl'};
+if(clearEff){const sl={wavy:'.wv',medium:'.tm',large:'.tl',bold:'b[data-ai]',hl:'span[data-ai]'};clearEff.forEach(e=>sl[e]&&root.querySelectorAll(sl[e]).forEach(x=>x.replaceWith(...x.childNodes)));root.normalize()}
 for(const m of marks){const text=m.text;const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let nd;while(nd=w.nextNode()){if(nd.parentElement.closest('.wv,.tm,.tl,b,strong,h1,h2,h3,span[style]'))continue;let i=nd.nodeValue.indexOf(text);if(i<0)i=nd.nodeValue.toLowerCase().indexOf(text.toLowerCase());if(i<0)continue;
-const mid=nd.splitText(i);mid.splitText(text.length);const el=document.createElement(m.style=='bold'?'b':'span');if(m.style=='hl')el.style.backgroundColor='#fff176';else if(cls[m.style])el.className=cls[m.style];mid.replaceWith(el);el.append(mid);n++;break}}
+const mid=nd.splitText(i);mid.splitText(text.length);const el=document.createElement(m.style=='bold'?'b':'span');el.setAttribute('data-ai',m.style);if(m.style=='hl')el.style.backgroundColor='#fff176';else if(cls[m.style])el.className=cls[m.style];mid.replaceWith(el);el.append(mid);n++;break}}
 return{html:root.innerHTML,n}}
-function fmtApply(marks){flush();const before=cur.h,r=applyMarks(before,marks);if(!r.n)return toast('Nie znaleziono pasujących fragmentów w notatce');R.fb=before;$('#e-h').innerHTML=r.html;flush();document.querySelectorAll('.m').forEach(x=>x.remove());toast('Dodano '+r.n+' wyróżnień. Cofniesz je w oknie formatowania AI')}
+function fmtApply(marks){flush();const before=cur.h,r=applyMarks(before,marks,FM.fx.clr!==0?Object.keys(FXN).filter(k=>FM.fx[k]):null);if(!r.n)return toast('Nie znaleziono pasujących fragmentów w notatce');R.fb=before;$('#e-h').innerHTML=r.html;flush();document.querySelectorAll('.m').forEach(x=>x.remove());toast('Dodano '+r.n+' wyróżnień. Cofniesz je w oknie formatowania AI')}
 async function fmtAI(){const id=cur.id;flush();clearTimeout(st_);await put();if(!S.ev.some(x=>x.id==id))return toast('Najpierw wpisz tytuł lub tekst notatki');const eff=Object.keys(FXN).filter(k=>FM.fx[k]);if(!eff.length)return toast('Zaznacz przynajmniej jeden efekt');
 toast('AI formatuje notatkę… to może potrwać do minuty');try{const g=await runJob({kind:'fmt',id,mode:FM.mode,effects:eff},'fmt-'+id);if(!cur||cur.id!=id)return;fmtApply(g.marks||[])}catch(e){toast('AI: '+errMsg(String(e)))}}
 /* ---------- E8 ---------- */
-const E8={tree:null,err:0},E={sid:null};let E8cb=null,e8T=0;
+const E8={tree:null,err:0},E={sid:null,did:null};let E8cb=null,e8T=0;
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const L6='ABCDEF';
-const DEMO={subjects:[{id:'demo-m',name:'Matematyka',topics:[{id:'demo-p',name:'Procenty (przykład)',count:5}]},{id:'demo-j',name:'Język polski',topics:[{id:'demo-c',name:'Części mowy (przykład)',count:3}]}]};
+const DEMO={subjects:[{id:'demo-m',name:'Matematyka',sections:[{id:'demo-ms',name:'Liczby i procenty (przykład)',topics:[{id:'demo-p',name:'Procenty',count:5}]}]},{id:'demo-j',name:'Język polski',sections:[{id:'demo-js',name:'Gramatyka (przykład)',topics:[{id:'demo-c',name:'Części mowy',count:3}]}]}]};
 const dm=(id,o)=>({id,type:'choice',kind:'cw',q:'',img:'',opts:[],exo:[],ans:-1,st:[],num:'',sol:'',ex:'',src:'Ćwiczenie',pts:0,...o});
 const DEMOT={'demo-p':[
 dm('d1',{q:'Cena kurtki wynosiła 200 zł. Po obniżce o 15% kurtka kosztuje:',opts:['170 zł','185 zł','30 zł','215 zł'],ans:0,exo:['Dobrze: 15% z 200 zł to 30 zł, więc nowa cena to 200 − 30 = 170 zł.','Nie. 185 zł to cena po obniżce o 7,5%, a nie o 15%.','Nie. 30 zł to sama wartość obniżki, a pytanie dotyczy ceny po obniżce.','Nie. 215 zł to cena po podwyżce o 15%, a nie po obniżce.'],ex:'Obniżka o 15% oznacza, że płacimy 85% ceny: 0,85 · 200 zł = 170 zł.',pts:1}),
@@ -534,27 +536,35 @@ dm('c2',{type:'tf',q:'Oceń prawdziwość zdań o zdaniu: „Ola czyta ciekawą 
 dm('c3',{type:'open',q:'W zdaniu „Wczoraj Kasia pisała długi list do babci.” wskaż wszystkie rzeczowniki i uzasadnij wybór.',sol:'Rzeczowniki: Kasia (kto?), list (co?), babci (do kogo? – do babci).\nPozostałe wyrazy: „wczoraj” – przysłówek, „pisała” – czasownik, „długi” – przymiotnik, „do” – przyimek.',ex:'Rzeczownik oznacza osoby, rzeczy i zjawiska oraz odpowiada na pytania kto? co?. Występuje też po przyimku (do kogo? – do babci).',pts:2})]};
 const isDemo=()=>!E8.tree||!E8.tree.subjects.length;
 const e8tree=()=>isDemo()?DEMO:E8.tree;
+const normTree=t=>({subjects:(t&&Array.isArray(t.subjects)?t.subjects:[]).map(s=>({...s,sections:Array.isArray(s.sections)?s.sections:(Array.isArray(s.topics)?[{id:('s-'+s.id).slice(0,40),name:'Ogólne',topics:s.topics}]:[])}))});
+const curSub=()=>e8tree().subjects.find(x=>x.id==E.sid);
+const curSec=()=>{const s=curSub();return s&&s.sections.find(x=>x.id==E.did)};
 const prog=tid=>{try{return JSON.parse(localStorage.getItem('e8p:'+tid)||'{}')}catch(e){return{}}};
 const okN=tid=>Object.values(prog(tid)).filter(s=>s&&s.r=='ok').length;
-async function loadE8(){try{E8.tree=await api('e8');if(!E8.tree||!Array.isArray(E8.tree.subjects))E8.tree={subjects:[]};E8.err=0}catch(x){E8.err=x}if(view=='e8'&&!X)render()}
+async function loadE8(){try{E8.tree=normTree(await api('e8'));E8.err=0}catch(x){E8.err=x}if(view=='e8'&&!X)render()}
 function e8Home(){if(!E8.tree&&!E8.err)return '<div class="empty g">Ładowanie…</div>';
 const T=e8tree(),demo=isDemo(),adm=ED()&&!!E8.tree&&!demo;
 const note=demo?`<div class="g inf">${E8.err?(ED()?'Serwer nie ma jeszcze obsługi E8 – wgraj nowy api.mjs na GitHub. Poniżej przykładowe zadania.':'Zadania E8 są chwilowo niedostępne. Poniżej przykład.'):(ED()?'To przykładowe ćwiczenia. Dodaj własny przedmiot, a przykład zniknie.':'Administrator doda tu zadania egzaminacyjne. Poniżej przykład.')}</div>`:'';
-const addS=ED()&&E8.tree?`<div class="row" style="justify-content:flex-start;margin:14px 0 0"><button class="btn pr" data-a="e8sa">${ic('plus')}Dodaj przedmiot</button></div>`:'';
-const s=E.sid&&T.subjects.find(x=>x.id==E.sid);if(!s)E.sid=null;
-if(!s)return note+`<div class="sub-grid">${T.subjects.map(x=>{const n=x.topics.reduce((a,t)=>a+(t.count||0),0),ok=x.topics.reduce((a,t)=>a+okN(t.id),0);return `<article class="g sj" data-a="e8s" data-id="${x.id}"><div>${ic('folder')}${adm?`<span class="ico"><button class="btn ib sm2" data-a="e8sr" data-id="${x.id}" aria-label="Zmień nazwę">${ic('edit')}</button><button class="btn ib sm2 dg" data-a="e8sd" data-id="${x.id}" aria-label="Usuń">${ic('trash')}</button></span>`:''}</div><h3>${esc(x.name)}</h3><span class="mt">${x.topics.length} tematów · ${n} zadań</span><div class="pbar"><i style="width:${n?ok/n*100:0}%"></i></div></article>`}).join('')}</div>${addS}`;
-return note+`<div class="crumb"><button class="btn ib" data-a="e8b" aria-label="Wróć">${ic('back')}</button><h2>${esc(s.name)}</h2></div>`+(s.topics.map(t=>{const ok=okN(t.id),n=t.count||0;return `<article class="g ev" data-a="e8t" data-id="${t.id}" style="--c:var(--ac)"><div class="ic">${ic('exam')}</div><div style="flex:1;min-width:0"><h3>${esc(t.name)}</h3><div class="mt">${n} zadań · poprawnie ${ok}</div><div class="pbar"><i style="width:${n?ok/n*100:0}%"></i></div></div>${adm?`<span class="ico"><button class="btn ib sm2" data-a="e8tr" data-id="${t.id}" aria-label="Zmień nazwę">${ic('edit')}</button><button class="btn ib sm2 dg" data-a="e8td" data-id="${t.id}" aria-label="Usuń">${ic('trash')}</button></span>`:''}</article>`}).join('')||'<div class="empty g">Brak tematów w tym przedmiocie.</div>')+(ED()&&E8.tree&&!demo?`<div class="row" style="justify-content:flex-start;margin:14px 0 0"><button class="btn pr" data-a="e8ta">${ic('plus')}Dodaj temat</button></div>`:'')}
+const stat=ts=>{const n=ts.reduce((a,t)=>a+(t.count||0),0),ok=ts.reduce((a,t)=>a+okN(t.id),0);return{n,ok,w:n?ok/n*100:0}};
+const ctl=(a,id)=>adm?`<span class="ico"><button class="btn ib sm2" data-a="${a}r" data-id="${id}" aria-label="Zmień nazwę">${ic('edit')}</button><button class="btn ib sm2 dg" data-a="${a}d" data-id="${id}" aria-label="Usuń">${ic('trash')}</button></span>`:'';
+const addBtn=(a,l,extra='',any)=>ED()&&E8.tree&&(any||!demo)?`<div class="row" style="justify-content:flex-start;margin:14px 0 0"><button class="btn pr" data-a="${a}">${ic('plus')}${l}</button>${extra}</div>`:'';
+const crumb=t=>`<div class="crumb"><button class="btn ib" data-a="e8b" aria-label="Wróć">${ic('back')}</button><h2>${t}</h2></div>`;
+const s=E.sid&&T.subjects.find(x=>x.id==E.sid);if(!s){E.sid=null;E.did=null}
+if(!s)return note+`<div class="sub-grid">${T.subjects.map(x=>{const st=stat(x.sections.flatMap(d=>d.topics));return `<article class="g sj" data-a="e8s" data-id="${x.id}"><div>${ic('folder')}${ctl('e8s',x.id)}</div><h3>${esc(x.name)}</h3><span class="mt">${x.sections.length} działów · ${st.n} zadań</span><div class="pbar"><i style="width:${st.w}%"></i></div></article>`}).join('')}</div>${addBtn('e8sa','Dodaj przedmiot','',1)}`;
+const d=E.did&&s.sections.find(x=>x.id==E.did);if(!d)E.did=null;
+if(!d)return note+crumb(esc(s.name))+(s.sections.map(x=>{const st=stat(x.topics);return `<article class="g ev" data-a="e8d" data-id="${x.id}" style="--c:var(--ac)"><div class="ic">${ic('folder')}</div><div style="flex:1;min-width:0"><h3>${esc(x.name)}</h3><div class="mt">${x.topics.length} tematów · ${st.n} zadań · poprawnie ${st.ok}</div><div class="pbar"><i style="width:${st.w}%"></i></div></div>${ctl('e8d',x.id)}</article>`}).join('')||'<div class="empty g">Brak działów. Dodaj pierwszy, np. „Liczby”.</div>')+addBtn('e8da','Dodaj dział');
+return note+crumb(`${esc(s.name)} <span class="mt" style="font-weight:400">›</span> ${esc(d.name)}`)+(d.topics.map(t=>{const st=stat([t]);return `<article class="g ev" data-a="e8t" data-id="${t.id}" style="--c:var(--ac)"><div class="ic">${ic('exam')}</div><div style="flex:1;min-width:0"><h3>${esc(t.name)}</h3><div class="mt">${st.n} zadań · poprawnie ${st.ok}</div><div class="pbar"><i style="width:${st.w}%"></i></div></div>${ctl('e8t',t.id)}</article>`}).join('')||'<div class="empty g">Brak tematów w tym dziale.</div>')+addBtn('e8ta','Dodaj temat',`<button class="btn" data-a="e8imd">${ic('upload')}Importuj do tematów</button>`)}
 /* drzewo: dodawanie, zmiana nazw, usuwanie */
 function e8Name(title,val,cb){E8cb=cb;modal(`<h2>${title}</h2><label>Nazwa<input id="e8n" value="${esc(val||'')}" maxlength="80"></label><div class="row"><button class="btn" data-a="sc">Anuluj</button><button class="btn pr" data-a="e8ok">Zapisz</button></div>`);setTimeout(()=>$('#e8n')?.focus(),60)}
-async function saveTree(){try{const r=await api('e8/tree',{method:'PUT',body:JSON.stringify({subjects:E8.tree.subjects.map(s=>({id:s.id,name:s.name,topics:s.topics.map(t=>({id:t.id,name:t.name}))}))})});E8.tree.subjects=r.subjects;render()}catch(x){toast(x==404?'Serwer nie obsługuje jeszcze E8 – wgraj nowy api.mjs':'Nie udało się zapisać');loadE8()}}
+async function saveTree(){try{const r=await api('e8/tree',{method:'PUT',body:JSON.stringify({subjects:E8.tree.subjects.map(s=>({id:s.id,name:s.name,sections:s.sections.map(d=>({id:d.id,name:d.name,topics:d.topics.map(t=>({id:t.id,name:t.name}))}))}))})});E8.tree=normTree({subjects:r.subjects});render();return true}catch(x){toast(x==404?'Serwer nie obsługuje jeszcze E8 – wgraj nowy api.mjs':'Nie udało się zapisać');loadE8();return false}}
 /* ---------- rozwiązywanie ---------- */
 const normNum=v=>String(v).trim().toLowerCase().replace(/\s+/g,'').replace(',','.');
 const toNum=v=>{const x=normNum(v).replace(/[^\d.\-+/]/g,'');if(/^-?\d+(\.\d+)?\/\d+(\.\d+)?$/.test(x)){const[a,b]=x.split('/');return +a/+b}const f=parseFloat(x);return isNaN(f)?null:f};
 const numOk=(t,v)=>{const n=toNum(v);return String(t.num).split(';').some(a=>{const an=toNum(a);return n!=null&&an!=null?Math.abs(n-an)<=1e-9*Math.max(1,Math.abs(an)):normNum(a)==normNum(v)})};
 const saveProg=()=>{if(!X||X.demo&&false)return;try{localStorage.setItem('e8p:'+X.tid,JSON.stringify(X.st))}catch(e){}};
-async function openTopic(tid){const s=e8tree().subjects.find(x=>x.id==E.sid),t=s&&s.topics.find(x=>x.id==tid);if(!t)return;let tasks;
+async function openTopic(tid){const s=curSub(),d=curSec(),t=d&&d.topics.find(x=>x.id==tid);if(!t)return;let tasks;
 if(isDemo())tasks=DEMOT[tid]||[];else{const m=modal('<div class="empty">Ładowanie…</div>');try{tasks=(await api('e8/t/'+tid)).tasks||[]}catch(x){m.remove();return toast('Nie udało się pobrać zadań')}m.remove()}
-X={tid,sn:s.name,tn:t.name,tasks:JSON.parse(JSON.stringify(tasks)).map(x=>({kind:'cke',exo:[],...x})),st:prog(tid),pd:{},edit:false,demo:isDemo(),f:'all'};e8Show()}
+X={tid,sn:s.name,dn:d.name,tn:t.name,tasks:JSON.parse(JSON.stringify(tasks)).map(x=>({kind:'cke',exo:[],...x})),st:prog(tid),pd:{},edit:false,demo:isDemo(),f:'all'};e8Show()}
 const e8cnt=()=>X.tasks.filter(t=>(X.st[t.id]||{}).r=='ok').length+'/'+X.tasks.length;
 function e8Show(){let o=$('#e8o');if(!o){o=document.createElement('div');o.id='e8o';$('#ov').append(o)}
 o.className=rcls()+' e8';o.style.cssText=rvars();
@@ -563,7 +573,7 @@ const tabs=X.edit?'':`<nav class="rtabs">${[['all','listb','Wszystkie'],['cke','
 o.innerHTML=`<div class="rprog"></div>${bar}<div class="rsc"><div class="rbody">${X.edit?e8Edit():e8Solve()}</div></div>${tabs}`;
 o.querySelector('.rsc').addEventListener('scroll',rscroll,{passive:true});padInit(o)}
 function e8Solve(){const all=X.tasks,list=all.filter(t=>X.f=='all'||t.kind==X.f),ok=all.filter(t=>(X.st[t.id]||{}).r=='ok').length,nc=all.filter(t=>t.kind=='cw').length;
-return `<div class="rhd"><h2>${esc(X.tn)}</h2><span>${esc(X.sn)}</span></div><div class="mt" style="margin:-4px 0 8px">${all.length} zadań · ${all.length-nc} z arkuszy · ${nc} ćwiczeń</div><div class="rprg"><i id="e8p" style="width:${all.length?ok/all.length*100:0}%"></i></div>`+(list.map((t,i)=>tkHTML(t,i+1)).join('')||`<div class="empty">${all.length?'Brak zadań w tej kategorii.':'Brak zadań w tym temacie.'}${ED()&&!X.demo?' Dodaj je w edytorze.':''}</div>`)}
+return `<div class="rhd"><h2>${esc(X.tn)}</h2><span>${esc(X.sn)} › ${esc(X.dn)}</span></div><div class="mt" style="margin:-4px 0 8px">${all.length} zadań · ${all.length-nc} z arkuszy · ${nc} ćwiczeń</div><div class="rprg"><i id="e8p" style="width:${all.length?ok/all.length*100:0}%"></i></div>`+(list.map((t,i)=>tkHTML(t,i+1)).join('')||`<div class="empty">${all.length?'Brak zadań w tej kategorii.':'Brak zadań w tym temacie.'}${ED()&&!X.demo?' Dodaj je w edytorze.':''}</div>`)}
 const PCOL=[['ink','var(--rtx)'],['#2563eb','#2563eb'],['#dc2626','#dc2626'],['#16a34a','#16a34a']];
 let PS={c:'ink',w:2.4,er:0,po:0};try{Object.assign(PS,JSON.parse(localStorage.getItem('pds')||'{}'))}catch(e){}
 function padHTML(id,pd){return `<div class="pd ${pd.open?'':'off'}"><div class="pdh">${PCOL.map(([k,c])=>`<button class="pc ${PS.c==k&&!PS.er?'on':''}" data-a="pdc" data-k="${k}" style="background:${c}" aria-label="Kolor pisaka"></button>`).join('')}<button class="pb ${PS.w>3?'on':''}" data-a="pdw" title="Grubość pisaka">${ic('pen')}</button><button class="pb ${PS.er?'on':''}" data-a="pde" title="Gumka">${ic('eraser')}</button><button class="pb" data-a="pdu" title="Cofnij kreskę">${ic('undo')}</button><button class="pb" data-a="pdx" title="Wyczyść brudnopis">${ic('trash')}</button><button class="pb ${pd.tall?'on':''}" data-a="pdt" data-t="${id}" title="Powiększ pole">${ic('expand')}</button><button class="pb ${PS.po?'on':''}" data-a="pdp" title="Rysuj tylko rysikiem">${ic('hand')}</button></div><div class="cv ${pd.tall?'tall':''} ${PS.po?'po':''}" data-t="${id}"><canvas></canvas></div></div>`}
@@ -598,7 +608,7 @@ function padUI(){try{localStorage.setItem('pds',JSON.stringify(PS))}catch(e){}do
 const newTask=ty=>({id:uid(),type:ty,kind:X.f=='cw'?'cw':'cke',q:'',img:'',opts:ty=='choice'?['','','','']:[],exo:ty=='choice'?['','','','']:[],ans:0,st:ty=='tf'?[{t:'',v:true,w:''},{t:'',v:false,w:''}]:[],num:'',sol:'',ex:'',src:'',pts:0});
 const cleanT=t=>{const pr=(t.opts||[]).map((o,i)=>({o:String(o).trim(),w:String((t.exo||[])[i]||'').trim()})),ct=pr[t.ans]?pr[t.ans].o:'',kp=pr.filter(p=>p.o).slice(0,6),opts=kp.map(p=>p.o);return{...t,q:(t.q||'').trim(),opts,exo:kp.map(p=>p.w),ans:ct?opts.indexOf(ct):-1,st:(t.st||[]).map(x=>({t:(x.t||'').trim(),v:!!x.v,w:(x.w||'').trim()})).filter(x=>x.t),num:(t.num||'').trim(),sol:(t.sol||'').trim(),ex:(t.ex||'').trim()}};
 const validT=o=>o.q&&(o.type=='choice'?o.opts.length>=2&&o.ans>=0:o.type=='tf'?o.st.length>=1:o.type=='num'?!!o.num:!!(o.sol||o.ex));
-const setCount=(tid,n)=>{if(E8.tree)E8.tree.subjects.forEach(s=>s.topics.forEach(t=>{if(t.id==tid)t.count=n}))};
+const setCount=(tid,n)=>{if(E8.tree)E8.tree.subjects.forEach(s=>s.sections.forEach(d=>d.topics.forEach(t=>{if(t.id==tid)t.count=n})))};
 const e8Sched=()=>{clearTimeout(e8T);e8T=setTimeout(e8Save,800);setStat('Zapisywanie…')};
 async function e8Save(){clearTimeout(e8T);e8T=0;if(!X||X.demo)return true;const id=X.tid,body=JSON.stringify({tasks:X.tasks.map(cleanT).filter(validT)});setStat('Zapisywanie…');
 try{const res=await api('e8/t/'+id,{method:'PUT',body,keepalive:body.length<60000});setCount(id,res.count);setStat('Zapisano');return true}
@@ -613,7 +623,7 @@ if(t.type=='choice')b=t.opts.map((o,j)=>`<div class="eo"><button class="okb ${t.
 else if(t.type=='tf')b=t.st.map((x,j)=>`<div class="eo"><button class="okb ${x.v?'on':''}" data-a="tkv" data-i="${i}" data-j="${j}" title="Kliknij, aby zmienić Prawda/Fałsz" style="font-weight:700">${x.v?'P':'F'}</button><input data-e8="s" data-i="${i}" data-j="${j}" value="${esc(x.t)}" placeholder="Zdanie do oceny"><button class="rb" data-a="tkrs" data-i="${i}" data-j="${j}" title="Usuń zdanie">${ic('x')}</button></div><textarea rows="1" data-e8="sw" data-i="${i}" data-j="${j}" placeholder="Wyjaśnienie dla tego zdania" style="margin-left:44px;width:calc(100% - 44px)">${esc(x.w||'')}</textarea>`).join('')+(t.st.length<8?`<div style="margin:0 0 8px"><button class="rbtn sm" data-a="tkas" data-i="${i}">${ic('plus')}Zdanie</button></div>`:'');
 else if(t.type=='num')b=`<input data-e8="num" data-i="${i}" value="${esc(t.num)}" placeholder="Poprawna odpowiedź (kilka dozwolonych oddziel średnikiem, np. 12;12,0)" style="margin-bottom:8px">`;
 else b=`<textarea rows="3" data-e8="sol" data-i="${i}" placeholder="Rozwiązanie wzorcowe">${esc(t.sol)}</textarea>`;
-return `<div class="ei"><div class="eh"><b>${i+1}</b><span style="flex:1"></span><button class="rb" data-a="tkmu" data-i="${i}" title="W górę">${ic('back').replace('<svg','<svg style="transform:rotate(90deg)"')}</button><button class="rb" data-a="tkmd" data-i="${i}" title="W dół">${ic('back').replace('<svg','<svg style="transform:rotate(-90deg)"')}</button><button class="rb" data-a="tkdp" data-i="${i}" title="Powiel">${ic('copy')}</button><button class="rb dg" data-a="tkd" data-i="${i}" title="Usuń">${ic('trash')}</button></div><div class="chips" style="margin-bottom:8px">${chips}</div><div class="chips" style="margin-bottom:8px">${kd}</div>
+return `<div class="ei"><div class="eh"><b>${i+1}</b><span style="flex:1"></span><button class="rb" data-a="tkmu" data-i="${i}" title="W górę">${ic('back').replace('<svg','<svg style="transform:rotate(90deg)"')}</button><button class="rb" data-a="tkmd" data-i="${i}" title="W dół">${ic('back').replace('<svg','<svg style="transform:rotate(-90deg)"')}</button><button class="rb" data-a="tkmv" data-i="${i}" title="Przenieś do innego tematu">${ic('folder')}</button><button class="rb" data-a="tkdp" data-i="${i}" title="Powiel">${ic('copy')}</button><button class="rb dg" data-a="tkd" data-i="${i}" title="Usuń">${ic('trash')}</button></div><div class="chips" style="margin-bottom:8px">${chips}</div><div class="chips" style="margin-bottom:8px">${kd}</div>
 <textarea rows="3" data-e8="q" data-i="${i}" placeholder="Treść zadania">${esc(t.q)}</textarea>${t.img?`<div class="gal"><div><img src="${t.img}"><button data-a="tkim" data-i="${i}" aria-label="Usuń obrazek">×</button></div></div>`:''}<div style="margin:0 0 8px"><button class="rbtn sm" data-a="tki" data-i="${i}">${ic('image')}${t.img?'Zmień obrazek':'Dodaj obrazek'}</button></div>${b}
 <textarea rows="2" data-e8="ex" data-i="${i}" placeholder="Wyjaśnienie: dlaczego odpowiedź jest taka">${esc(t.ex)}</textarea><div class="two"><input data-e8="src" data-i="${i}" value="${esc(t.src)}" placeholder="Źródło, np. E8 2024, zad. 5"><input data-e8="pts" data-i="${i}" type="number" min="0" max="20" value="${t.pts||''}" placeholder="Punkty"></div></div>`}
 function e8Edit(){const bad=X.tasks.filter(t=>!validT(cleanT(t))).length;return `<div class="rhd"><h2>Edytor zadań</h2><span id="sv"></span></div><div class="chips" style="margin:2px 0 8px"><button class="rbtn sm" data-a="e8imp">${ic('upload')}Importuj z AI / pliku</button><button class="rbtn sm" data-a="e8gen">${ic('spark')}Wygeneruj ćwiczenia AI</button></div><p class="mt" style="margin:0 0 4px">Zapisuje się samo.${bad?` Niepełnych zadań: ${bad} (nie zapiszą się, dopóki ich nie uzupełnisz).`:''}</p>${X.tasks.map((t,i)=>edTask(t,i)).join('')||'<div class="empty">Brak zadań. Dodaj pierwsze albo zaimportuj.</div>'}<div class="rrow"><button class="rbtn pr" data-a="tka" data-k="choice">${ic('plus')}Wybór A–D</button><button class="rbtn" data-a="tka" data-k="tf">${ic('plus')}Prawda/Fałsz</button><button class="rbtn" data-a="tka" data-k="num">${ic('plus')}Liczba</button><button class="rbtn" data-a="tka" data-k="open">${ic('plus')}Otwarte</button></div>`}
@@ -630,13 +640,13 @@ const e8RULES=`Zasady:
 - Każde zadanie MUSI mieć "wyjasnienie" (dlaczego odpowiedź jest taka). W "wybor" dodaj "wyjasnienia_odpowiedzi": jedno wyjaśnienie na każdą odpowiedź w tej samej kolejności (dlaczego jest dobra lub zła). W "prawda_falsz" każde zdanie ma własne "wyjasnienie".
 - Matematykę zapisuj znakami Unicode (², √, ×, ÷, ½, π). Jeśli zadanie opiera się na rysunku, opisz rysunek słowami w treści.
 - Język: polski.`;
-const e8PSheet=()=>`Poniżej jest arkusz egzaminacyjny (egzamin ósmoklasisty) z przedmiotu „${X.sn}”. Wybierz z niego zadania do tematu „${X.tn}” i przepisz je do formatu JSON, bez zmieniania treści zadań (jeśli dołączę zdjęcie, odczytaj treść z niego). W polu "rodzaj" wpisz "arkusz", a w "zrodlo" rok i numer zadania z arkusza. Wyjaśnienia napisz własnymi słowami.
+const e8PSheet=()=>`Poniżej jest arkusz egzaminacyjny (egzamin ósmoklasisty) z przedmiotu „${X.sn}”. Wybierz z niego zadania do tematu „${X.tn}” (dział „${X.dn}”) i przepisz je do formatu JSON, bez zmieniania treści zadań (jeśli dołączę zdjęcie, odczytaj treść z niego). W polu "rodzaj" wpisz "arkusz", a w "zrodlo" rok i numer zadania z arkusza. Wyjaśnienia napisz własnymi słowami.
 
 ${e8RULES}
 
 Odpowiedz WYŁĄCZNIE jednym blokiem JSON, bez komentarza, w formacie:
 ${E8FMT}`;
-const e8PGen=()=>`Wymyśl nowe, oryginalne ćwiczenia w stylu egzaminu ósmoklasisty z przedmiotu „${X.sn}”, temat: „${X.tn}”. Przygotuj około 8 zadań różnych typów. W polu "rodzaj" wpisz "cwiczenie", a w "zrodlo" wpisz "Ćwiczenie".
+const e8PGen=()=>`Wymyśl nowe, oryginalne ćwiczenia w stylu egzaminu ósmoklasisty z przedmiotu „${X.sn}”, dział „${X.dn}”, temat: „${X.tn}”. Przygotuj około 8 zadań różnych typów. W polu "rodzaj" wpisz "cwiczenie", a w "zrodlo" wpisz "Ćwiczenie".
 
 ${e8RULES}
 
@@ -649,19 +659,22 @@ if(ok.length>=2&&ok.every((v,i)=>new RegExp('^'+String.fromCharCode(65+i)+'[).:]
 if(ans<0){let c=pick(x,'poprawna','poprawna_odpowiedz','poprawnaOdpowiedz','prawidlowa','correct','correct_answer','correctAnswer','answer','ans');
 if(typeof c=='number')ans=c===0?0:(c>=1&&c<=ok.length?c-1:-1);else{c=S(c);if(c){ans=ok.findIndex(v=>v.toLowerCase()==c.toLowerCase());if(ans<0&&/^[A-Fa-f][).:]?$/.test(c)){const n=c.toUpperCase().charCodeAt(0)-65;ans=n<ok.length?n:-1}if(ans<0&&/^\d+$/.test(c)){const n=+c;ans=n===0?0:(n<=ok.length?n-1:-1)}if(ans<0){const m=c.match(/^[A-Fa-f][).:]\s*(.+)$/);if(m)ans=ok.findIndex(v=>v.toLowerCase()==m[1].trim().toLowerCase())}}}}
 return{opts:ok,exo:pr.map(p=>p.w),ans}}
-function parseE8(raw){let t=String(raw||'').trim();const f=t.match(/```(?:json|JSON)?\s*([\s\S]*?)```/);if(f)t=f[1].trim();const tj=(a,b)=>{const i=t.indexOf(a),k=t.lastIndexOf(b);if(i>=0&&k>i){try{return JSON.parse(t.slice(i,k+1))}catch(e){}}return null};const o=tj('{','}')||tj('[',']');
+function salvageObjs(t){let i=t.search(/"zadania"\s*:\s*\[/);i=i>=0?t.indexOf('[',i):t.indexOf('[');if(i<0)return[];const out=[];let d=0,st=-1,str=false,esc2=false;
+for(let k=i+1;k<t.length;k++){const c=t[k];if(str){if(esc2)esc2=false;else if(c=='\\')esc2=true;else if(c=='"')str=false;continue}if(c=='"'){str=true;continue}
+if(c=='{'){if(d==0)st=k;d++}else if(c=='}'){d--;if(d==0&&st>=0){try{out.push(JSON.parse(t.slice(st,k+1)))}catch(e){}st=-1}else if(d<0)d=0}}return out}
+function parseE8(raw){let t=String(raw||'').trim();const f=t.match(/```(?:json|JSON)?\s*([\s\S]*?)```/);if(f)t=f[1].trim();const tj=(a,b)=>{const i=t.indexOf(a),k=t.lastIndexOf(b);if(i>=0&&k>i){const x=t.slice(i,k+1);try{return JSON.parse(x)}catch(e){try{return JSON.parse(x.replace(/,\s*([}\]])/g,'$1'))}catch(e2){}}}return null};let salv=0,o=tj('{','}')||tj('[',']');if(!o){const so=salvageObjs(t);if(so.length){o={zadania:so};salv=so.length}}
 const pick=(x,...ks)=>{for(const k of ks)if(x&&x[k]!=null&&x[k]!=='')return x[k];return ''},S=v=>typeof v=='string'?v.trim():v==null?'':(typeof v=='object'?S(pick(v,'tekst','text','opis','value')):String(v).trim()),tb=v=>v===true||/^(prawda|p|tak|true|1|yes)$/i.test(String(v).trim());
 const arr=Array.isArray(o)?o:(o&&(o.zadania||o.tasks||o.items||o.zadanie))||[],tasks=[];let skipped=0;
 (Array.isArray(arr)?arr:[]).forEach(x=>{const q=S(pick(x,'tresc','treść','polecenie','pytanie','q','question')),ex=S(pick(x,'wyjasnienie','wyjaśnienie','explanation','ex','uzasadnienie')),src=S(pick(x,'zrodlo','źródło','source','src')),kind=/cw|ćwicz|cwicz|exerc|wymy/i.test(S(pick(x,'rodzaj','kind','origin')))?'cw':'cke',pts=+pick(x,'punkty','pts','points')||0;
 const tyr=String(pick(x,'typ','type')).toLowerCase(),stRaw=pick(x,'zdania','statements','st','twierdzenia'),opRaw=pick(x,'odpowiedzi','opcje','options','opts','answers','choices','warianty');
 const ty=/prawd|tf|true|fa[lł]sz/.test(tyr)?'tf':/liczb|num|krótk|krotk/.test(tyr)?'num':/otwar|open/.test(tyr)?'open':/wyb|choice|zamkn|abcd/.test(tyr)?'choice':Array.isArray(stRaw)?'tf':Array.isArray(opRaw)?'choice':pick(x,'rozwiazanie','rozwiązanie','solution','sol')?'open':'num';
-const b={id:uid(),type:ty,kind,q,img:'',opts:[],exo:[],ans:0,st:[],num:'',sol:'',ex,src:src||(kind=='cw'?'Ćwiczenie':''),pts};if(!q){skipped++;return}
+const b={id:uid(),type:ty,kind,q,img:'',opts:[],exo:[],ans:0,st:[],num:'',sol:'',ex,src:src||(kind=='cw'?'Ćwiczenie':''),pts,temat:S(pick(x,'temat','topic','tematyka'))};if(!q){skipped++;return}
 if(ty=='choice'){const c=choiceFrom(x,pick,S);if(c.opts.length<2||c.opts.length>6||c.ans<0||c.ans>=c.opts.length){skipped++;return}Object.assign(b,c)}
 else if(ty=='tf'){b.st=(Array.isArray(stRaw)?stRaw:[]).map(z=>({t:S(pick(z,'tekst','text','t','zdanie','twierdzenie')),v:tb(pick(z,'prawda','true','v','poprawne','wartosc','wartość','odpowiedz','answer')),w:S(pick(z,'wyjasnienie','wyjaśnienie','w','explanation'))})).filter(z=>z.t).slice(0,8);if(!b.st.length){skipped++;return}}
 else if(ty=='num'){b.num=S(pick(x,'poprawna','odpowiedz','odpowiedź','answer','num','wynik'));if(!b.num){skipped++;return}}
 else{b.sol=S(pick(x,'rozwiazanie','rozwiązanie','solution','sol','odpowiedz_wzorcowa','odpowiedź_wzorcowa','answer'));if(!b.sol&&!ex){skipped++;return}}
-tasks.push(b)});return{tasks,skipped}}
-const i8Info=p=>!p?'Wklej odpowiedź AI albo wybierz plik.':p.tasks.length?`Znaleziono: ${p.tasks.length} zadań${p.skipped?` (pominięto ${p.skipped} niepełnych)`:''}.`:'Nie rozpoznano zadań. Sprawdź, czy to format z promptu (JSON).';
+tasks.push(b)});return{tasks,skipped,salv}}
+const i8Info=p=>!p?'Wklej odpowiedź AI albo wybierz plik.':p.tasks.length?`Znaleziono: ${p.tasks.length} zadań${p.skipped?` (pominięto ${p.skipped} niepełnych)`:''}.${p.salv?' Odpowiedź AI była ucięta lub uszkodzona – odczytano tyle, ile się dało.':''}`:'Nie rozpoznano zadań. Sprawdź, czy to format z promptu (JSON).';
 function i8Prev(){const t=$('#i8-t'),i=$('#i8-s');if(!t||!i)return;const p=t.value.trim()?parseE8(t.value):null;i.textContent=i8Info(p);i.style.color=p&&p.tasks.length?'#22c55e':''}
 function i8Modal(){modal(`<h2>Import zadań</h2><p class="mt" style="margin-top:-6px">1) Skopiuj prompt i wklej go do dowolnego AI (ChatGPT, Gemini, Claude…), razem z treścią arkusza albo jego zdjęciem.<br>2) Odpowiedź AI wklej poniżej albo wczytaj z pliku.</p>
 <div class="row" style="justify-content:flex-start;margin:0 0 10px"><button class="btn" data-a="i8cs">${ic('copy')}Prompt: przepisz z arkusza</button><button class="btn" data-a="i8cg">${ic('copy')}Prompt: wymyśl ćwiczenia</button></div>
@@ -670,12 +683,42 @@ function i8Modal(){modal(`<h2>Import zadań</h2><p class="mt" style="margin-top:
 <div id="i8-s" class="mt">Wklej odpowiedź AI albo wybierz plik.</div><label><input type="checkbox" id="i8-r"> Zastąp istniejące zadania (zamiast dopisać)</label>
 <div class="row"><button class="btn" data-a="sc">Anuluj</button><button class="btn pr" data-a="i8go">Importuj</button></div>`);
 $('#i8-f').onchange=async e=>{const f=e.target.files[0];if(!f)return;$('#i8-t').value=await f.text();i8Prev()}}
+const nrm=v=>String(v||'').toLowerCase().replace(/\s+/g,' ').trim();
+const e8PSec=()=>{const d=curSec(),FM8=E8FMT.replace(/"rodzaj":"arkusz",/g,'"rodzaj":"arkusz","temat":"nazwa tematu",');return `Poniżej jest arkusz egzaminacyjny (egzamin ósmoklasisty) z przedmiotu „${curSub().name}”. Przepisz z niego zadania z działu „${d.name}” do formatu JSON, bez zmieniania ich treści (jeśli dołączę zdjęcie, odczytaj treść z niego). Każde zadanie przypisz do tematu.
+
+Tematy w tym dziale: ${d.topics.map(t=>'„'+t.name+'”').join(', ')||'(jeszcze brak – wymyśl krótkie nazwy tematów)'}.
+W polu "temat" wpisz DOKŁADNIE nazwę jednego z tych tematów, do którego zadanie pasuje. Jeśli żaden nie pasuje, wpisz nową, krótką nazwę tematu (utworzę ją automatycznie). W polu "rodzaj" wpisz "arkusz", a w "zrodlo" rok i numer zadania z arkusza. Wyjaśnienia napisz własnymi słowami.
+
+${e8RULES}
+- W każdym zadaniu dodaj pole "temat".
+
+Odpowiedz WYŁĄCZNIE jednym blokiem JSON, bez komentarza, w formacie:
+${FM8}`};
+function groupBy(tasks,d){const gs=[];tasks.forEach(t=>{const nm=(t.temat||'').trim()||'Inne zadania',key=nrm(nm);let g=gs.find(x=>x.key==key);if(!g){const ex=d.topics.find(x=>nrm(x.name)==key);g={key,name:ex?ex.name:nm,tid:ex?ex.id:null,tasks:[]};gs.push(g)}g.tasks.push(t)});return gs}
+function iDPrev(){const t=$('#id-t'),i=$('#id-s');if(!t||!i)return;const p=t.value.trim()?parseE8(t.value):null;if(!p||!p.tasks.length){i.textContent=i8Info(p);i.style.color='';return}const gs=groupBy(p.tasks,curSec());i.innerHTML=esc(i8Info(p))+'<br>'+gs.map(g=>`${esc(g.name)}: <b>${g.tasks.length}</b>${g.tid?'':' (nowy temat)'}`).join(' · ');i.style.color='#22c55e'}
+function iDModal(){modal(`<h2>Import do tematów</h2><p class="mt" style="margin-top:-6px">Jeden arkusz możesz wczytać naraz do wielu tematów tego działu. AI przypisze każde zadanie do tematu, a brakujące tematy utworzę automatycznie.<br>1) Skopiuj prompt i wklej go do dowolnego AI razem z arkuszem lub jego zdjęciem.<br>2) Odpowiedź wklej poniżej albo wczytaj z pliku.</p>
+<div class="row" style="justify-content:flex-start;margin:0 0 10px"><button class="btn" data-a="idcp">${ic('copy')}Skopiuj prompt</button></div>
+<textarea id="id-t" rows="8" placeholder="Wklej tu odpowiedź AI (JSON z zadaniami)…"></textarea>
+<div class="row" style="justify-content:flex-start;margin:8px 0"><label class="btn" style="margin:0;color:var(--tx)">${ic('upload')}Wybierz plik<input type="file" id="id-f" accept=".json,.txt,.md,application/json,text/plain" hidden></label></div>
+<div id="id-s" class="mt">Wklej odpowiedź AI albo wybierz plik.</div>
+<div class="row"><button class="btn" data-a="sc">Anuluj</button><button class="btn pr" data-a="idgo">Importuj</button></div>`);
+$('#id-f').onchange=async e=>{const f=e.target.files[0];if(!f)return;$('#id-t').value=await f.text();iDPrev()}}
+async function iDgo(){const p=parseE8(($('#id-t')||{}).value);if(!p.tasks.length)return toast('Nie rozpoznano zadań');const sid=E.sid,did=E.did;closeM();
+const sec=()=>{const s=E8.tree.subjects.find(x=>x.id==sid);return s&&s.sections.find(x=>x.id==did)};const gs=groupBy(p.tasks,sec());let made=0;
+gs.forEach(g=>{if(!g.tid){const t={id:uid(),name:g.name,count:0};sec().topics.push(t);g.tid=t.id;g.isNew=true;made++}});
+toast('Importuję '+p.tasks.length+' zadań…');if(made&&!await saveTree())return;
+let total=0,fail=0,cut=0;for(const g of gs){try{const old=g.isNew?[]:((await api('e8/t/'+g.tid)).tasks||[]),add=g.tasks.map(t=>{const{temat,...x}=t;return x}),res=await api('e8/t/'+g.tid,{method:'PUT',body:JSON.stringify({tasks:[...old,...add]})});setCount(g.tid,res.count);total+=g.tasks.length;if(res.count<old.length+add.length)cut++}catch(e){fail++}}
+render();toast(fail?`Zaimportowano część zadań (błąd w ${fail} tematach)`:cut?`Zaimportowano ${total} zadań (w ${cut} tematach część ucięto – limit 200)`:`Zaimportowano ${total} zadań do ${gs.length} tematów`)}
+function mvModal(i){modal(`<h2>Przenieś zadanie</h2><label>Do tematu<select id="mv-t">${e8tree().subjects.map(s=>s.sections.map(d=>`<optgroup label="${esc(s.name)} › ${esc(d.name)}">${d.topics.map(t=>`<option value="${t.id}" ${t.id==X.tid?'selected':''}>${esc(t.name)}</option>`).join('')}</optgroup>`).join('')).join('')}</select></label><div class="row"><button class="btn" data-a="sc">Anuluj</button><button class="btn pr" data-a="mvgo" data-i="${i}">Przenieś</button></div>`)}
+async function mvGo(i){const to=($('#mv-t')||{}).value;closeM();if(!to||to==X.tid)return;const task=cleanT(X.tasks[i]);if(!validT(task))return toast('Uzupełnij zadanie przed przeniesieniem');
+try{const old=(await api('e8/t/'+to)).tasks||[],res=await api('e8/t/'+to,{method:'PUT',body:JSON.stringify({tasks:[...old,task]})});setCount(to,res.count);X.tasks.splice(i,1);e8Rerender();e8Sched();toast('Przeniesiono zadanie')}catch(x){toast('Nie udało się przenieść zadania')}}
 function g8Modal(){modal(`<h2>Wygeneruj ćwiczenia AI</h2><p class="mt" style="margin-top:-6px">AI wymyśli nowe zadania w stylu egzaminu z tematu „${esc(X.tn)}”. Każde ma wyjaśnienie i jest oznaczone jako Ćwiczenie.</p><label>Liczba zadań<select id="g8-n"><option>3</option><option selected>5</option><option>8</option><option>10</option></select></label><div class="lb">Typy zadań</div>${[['wybor','Wybór A–D',1],['prawda_falsz','Prawda/Fałsz',1],['liczba','Odpowiedź liczbowa',0],['otwarte','Otwarte',0]].map(([k,n,c])=>`<label style="display:flex;gap:10px;align-items:center;margin:6px 0;color:var(--tx)"><input type="checkbox" data-g8="${k}" ${c?'checked':''}> ${n}</label>`).join('')}<div class="row"><button class="btn" data-a="sc">Anuluj</button><button class="btn pr" data-a="g8go">${ic('spark')}Wygeneruj</button></div>`)}
 /* ---------- akcje E8 ---------- */
 function e8Act(a,el){const D=el.dataset,k=D.k,tid=D.t,i=+D.i,j=+D.j,T=tid&&X?X.tasks.find(x=>x.id==tid):null,ET=X&&X.edit?X.tasks[i]:null;
 switch(a){
-case 'e8s':E.sid=D.id;render(1);return true;
-case 'e8b':E.sid=null;render(1);return true;
+case 'e8s':E.sid=D.id;E.did=null;render(1);return true;
+case 'e8d':E.did=D.id;render(1);return true;
+case 'e8b':if(E.did)E.did=null;else E.sid=null;render(1);return true;
 case 'e8t':openTopic(D.id);return true;
 case 'e8x':closeE8();return true;
 case 'e8f':X.f=k;e8Show();return true;
@@ -716,13 +759,21 @@ case 'e8gen':g8Modal();return true;
 case 'i8cs':case 'i8cg':navigator.clipboard.writeText(a=='i8cs'?e8PSheet():e8PGen()).then(()=>toast('Skopiowano prompt – wklej go do AI'),()=>toast('Nie można skopiować'));return true;
 case 'i8go':{const p=parseE8($('#i8-t').value);if(!p.tasks.length){toast('Nie rozpoznano zadań');return true}if($('#i8-r').checked)X.tasks=[];X.tasks.push(...p.tasks);closeM();e8Rerender();e8Sched();toast('Zaimportowano zadań: '+p.tasks.length);return true}
 case 'g8go':{const n=+$('#g8-n').value,types=[...document.querySelectorAll('[data-g8]')].filter(c=>c.checked).map(c=>c.dataset.g8),tid2=X.tid;closeM();toast('AI wymyśla ćwiczenia… to może potrwać do minuty');
-runJob({kind:'e8gen',id:tid2,subject:X.sn,topic:X.tn,count:n,types},'gen-'+tid2).then(g=>{if(!X||X.tid!=tid2)return;const p=parseE8(JSON.stringify(g.data));p.tasks.forEach(t=>{t.kind='cw';t.src='Ćwiczenie'});X.tasks.push(...p.tasks);if(X.edit)e8Rerender();e8Sched();toast('Dodano ćwiczeń: '+p.tasks.length)}).catch(e=>toast('AI: '+errMsg(String(e))));return true}
-case 'e8sa':e8Name('Nowy przedmiot','',v=>{E8.tree.subjects.push({id:uid(),name:v,topics:[]});saveTree()});return true;
-case 'e8sr':{const s=E8.tree.subjects.find(x=>x.id==D.id);e8Name('Zmień nazwę przedmiotu',s.name,v=>{s.name=v;saveTree()});return true}
-case 'e8sd':if(confirm('Usunąć przedmiot razem z tematami i zadaniami?')){E8.tree.subjects=E8.tree.subjects.filter(x=>x.id!=D.id);E.sid=null;saveTree()}return true;
-case 'e8ta':e8Name('Nowy temat','',v=>{E8.tree.subjects.find(x=>x.id==E.sid).topics.push({id:uid(),name:v,count:0});saveTree()});return true;
-case 'e8tr':{const t=E8.tree.subjects.find(x=>x.id==E.sid).topics.find(x=>x.id==D.id);e8Name('Zmień nazwę tematu',t.name,v=>{t.name=v;saveTree()});return true}
-case 'e8td':if(confirm('Usunąć temat razem z zadaniami?')){const s=E8.tree.subjects.find(x=>x.id==E.sid);s.topics=s.topics.filter(x=>x.id!=D.id);saveTree()}return true;
+runJob({kind:'e8gen',id:tid2,subject:X.sn,topic:X.tn+' (dział: '+X.dn+')',count:n,types},'gen-'+tid2).then(g=>{if(!X||X.tid!=tid2)return;const p=parseE8(JSON.stringify(g.data));p.tasks.forEach(t=>{t.kind='cw';t.src='Ćwiczenie'});X.tasks.push(...p.tasks);if(X.edit)e8Rerender();e8Sched();toast('Dodano ćwiczeń: '+p.tasks.length)}).catch(e=>toast('AI: '+errMsg(String(e))));return true}
+case 'e8sa':e8Name('Nowy przedmiot','',v=>{E8.tree.subjects.push({id:uid(),name:v,sections:[]});saveTree()});return true;
+case 'e8sr':{const x=E8.tree.subjects.find(y=>y.id==D.id);e8Name('Zmień nazwę przedmiotu',x.name,v=>{x.name=v;saveTree()});return true}
+case 'e8sd':if(confirm('Usunąć przedmiot razem z działami, tematami i zadaniami?')){E8.tree.subjects=E8.tree.subjects.filter(x=>x.id!=D.id);E.sid=null;E.did=null;saveTree()}return true;
+case 'e8da':e8Name('Nowy dział','',v=>{curSub().sections.push({id:uid(),name:v,topics:[]});saveTree()});return true;
+case 'e8dr':{const x=curSub().sections.find(y=>y.id==D.id);e8Name('Zmień nazwę działu',x.name,v=>{x.name=v;saveTree()});return true}
+case 'e8dd':if(confirm('Usunąć dział razem z tematami i zadaniami?')){const sb=curSub();sb.sections=sb.sections.filter(x=>x.id!=D.id);E.did=null;saveTree()}return true;
+case 'e8ta':e8Name('Nowy temat','',v=>{curSec().topics.push({id:uid(),name:v,count:0});saveTree()});return true;
+case 'e8tr':{const x=curSec().topics.find(y=>y.id==D.id);e8Name('Zmień nazwę tematu',x.name,v=>{x.name=v;saveTree()});return true}
+case 'e8td':if(confirm('Usunąć temat razem z zadaniami?')){const d=curSec();d.topics=d.topics.filter(x=>x.id!=D.id);saveTree()}return true;
+case 'e8imd':iDModal();return true;
+case 'idcp':navigator.clipboard.writeText(e8PSec()).then(()=>toast('Skopiowano prompt – wklej go do AI z arkuszem'),()=>toast('Nie można skopiować'));return true;
+case 'idgo':iDgo();return true;
+case 'tkmv':mvModal(i);return true;
+case 'mvgo':mvGo(+D.i);return true;
 case 'e8ok':{const v=($('#e8n')||{}).value;if(!v||!v.trim())return true;closeM();E8cb&&E8cb(v.trim());return true}
 }return false}
 function rate(n){const c=R.c,k=c.q.shift();c.hint=0;if(n=='ok')c.known++;else{c.miss.add(k.id);c.q.splice(Math.min(n=='no'?2:5,c.q.length),0,k)}upd();if(!c.q.length)conf()}
@@ -795,6 +846,7 @@ if(t.id=='q'){qv=t.value;$('#lst').innerHTML=list()}
 else if(D.fx){FM.fx[D.fx]=t.checked?1:0;savFM()}
 else if(D.e8){const i=+D.i,j=+D.j,T=X.tasks[i],kk=D.e8;if(kk=='q')T.q=t.value;else if(kk=='ex')T.ex=t.value;else if(kk=='src')T.src=t.value;else if(kk=='pts')T.pts=+t.value||0;else if(kk=='o')T.opts[j]=t.value;else if(kk=='w')(T.exo=T.exo||[])[j]=t.value;else if(kk=='s')T.st[j].t=t.value;else if(kk=='sw')T.st[j].w=t.value;else if(kk=='num')T.num=t.value;else if(kk=='sol')T.sol=t.value;if(t.tagName=='TEXTAREA'){t.style.height='auto';t.style.height=t.scrollHeight+'px'}e8Sched()}
 else if(t.id=='i8-t')i8Prev();
+else if(t.id=='id-t')iDPrev();
 else if(t.id=='imp-t')impPrev();
 else if(t.id=='p-th'){lt=t.value=='auto'?null:t.value;try{lt?localStorage.setItem('th',lt):localStorage.removeItem('th')}catch(e){}ap();if(!R&&!X)render();const o=$('#rd');if(o)o.className=rcls();const o8=$('#e8o');if(o8)o8.className=rcls()+' e8'}
 else if(D.dk){const i=+D.i,j=+D.j,d=R.dk,k=D.dk;if(k=='cq')d.cards[i].q=t.value;else if(k=='ca')d.cards[i].a=t.value;else if(k=='qq')d.quiz[i].q=t.value;else if(k=='qo')d.quiz[i].opts[j]=t.value;else if(k=='qe')d.quiz[i].ex=t.value;if(t.tagName=='TEXTAREA'){t.style.height='auto';t.style.height=t.scrollHeight+'px'}dkSched()}
