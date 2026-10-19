@@ -60,6 +60,27 @@ const flatTopics = (t) => normTree(t).subjects.flatMap((s) => s.sections.flatMap
 const valid8 = (o) =>
   o.q && (o.type === "choice" ? o.opts.length >= 2 && o.ans >= 0 : o.type === "tf" ? o.st.length >= 1 : o.type === "num" ? !!o.num : !!(o.sol || o.ex));
 
+// Indeks notatek: jeden odczyt zamiast osobnego odczytu każdej notatki. Gdy indeks się rozjedzie z notatkami, jest odbudowywany.
+async function listMeta(store) {
+  const { blobs } = await store.list({ prefix: "m:" });
+  const keys = new Set(blobs.map((b) => b.key.slice(2)));
+  let idx = await store.get("idx", { type: "json" });
+  if (Array.isArray(idx) && idx.length === keys.size && idx.every((x) => keys.has(x.id))) return idx;
+  idx = (await Promise.all(blobs.map((b) => store.get(b.key, { type: "json" })))).filter(Boolean);
+  await store.setJSON("idx", idx);
+  return idx;
+}
+async function putMeta(store, meta) {
+  const idx = (await store.get("idx", { type: "json" })) || [];
+  const i = idx.findIndex((x) => x.id === meta.id);
+  if (i < 0) idx.push(meta); else idx[i] = meta;
+  await store.setJSON("idx", idx);
+}
+async function delMeta(store, id) {
+  const idx = (await store.get("idx", { type: "json" })) || [];
+  await store.setJSON("idx", idx.filter((x) => x.id !== id));
+}
+
 export default async (req) => {
   const store = getStore({ name: "notatki", consistency: "strong" });
   const parts = new URL(req.url).pathname.replace(/^\/api\/?/, "").split("/").filter(Boolean);
@@ -164,9 +185,7 @@ export default async (req) => {
     if (parts[0] === "notes") {
       const id = parts[1];
       if (!id && m === "GET") {
-        const { blobs } = await store.list({ prefix: "m:" });
-        const all = await Promise.all(blobs.map((b) => store.get(b.key, { type: "json" })));
-        return J(all.filter(Boolean));
+        return J(await listMeta(store));
       }
       if (id && !ID.test(id)) return J({ error: "bad id" }, 400);
       if (id && m === "GET") {
@@ -178,6 +197,7 @@ export default async (req) => {
         if (m === "DELETE") {
           await store.delete("n:" + id);
           await store.delete("m:" + id);
+          await delMeta(store, id);
           await store.delete("g:" + id);
           await store.delete("d:" + id);
           return J({ ok: 1 });
@@ -197,6 +217,7 @@ export default async (req) => {
         if (old && old.h !== h) await store.delete("g:" + id); // treść się zmieniła – talia AI jest nieaktualna
         await store.setJSON("n:" + id, note);
         await store.setJSON("m:" + id, meta);
+        await putMeta(store, meta);
         return J({ ok: 1 });
       }
     }

@@ -70,6 +70,22 @@ Odpowiedz WYŁĄCZNIE poprawnym JSON-em, bez komentarza i bez znaczników markdo
  {"typ":"otwarte","rodzaj":"cwiczenie","tresc":"...","rozwiazanie":"...","wyjasnienie":"...","zrodlo":"Ćwiczenie"}
 ]}`;
 
+const SORT_SYS = `Jesteś nauczycielem, który porządkuje zadania z arkuszy egzaminacyjnych (egzamin ósmoklasisty w Polsce).
+Dostajesz treść arkusza (lub kilku) oraz istniejącą strukturę przedmiotu: działy i tematy. Przepisz zadania z arkusza do formatu JSON i każde przypisz do działu i tematu.
+
+Zasady:
+- Nie zmieniaj treści zadań. Jeśli zadanie opiera się na rysunku, którego nie ma w tekście, pomiń je.
+- W polu "dzial" i "temat" użyj DOKŁADNIE nazw z istniejącej struktury, jeśli zadanie do nich pasuje. Jeśli nie pasuje, wymyśl nową, krótką nazwę działu zgodną z podstawą programową (np. "Liczby i działania", "Geometria", "Algebra", "Statystyka i prawdopodobieństwo") oraz nową nazwę tematu.
+- Typy zadań ("typ"): "wybor" (4 odpowiedzi), "prawda_falsz" (zdania z oceną), "liczba" (odpowiedź liczbowa), "otwarte" (z rozwiązaniem wzorcowym).
+- Każde zadanie MUSI mieć "wyjasnienie" napisane własnymi słowami. W "wybor" dodaj "wyjasnienia_odpowiedzi" (po jednym na każdą odpowiedź, w tej samej kolejności), a w "prawda_falsz" każde zdanie ma własne "wyjasnienie".
+- Pole "poprawna" w "wybor" musi być identyczne z jedną z odpowiedzi.
+- Pole "rodzaj" ustaw na "arkusz", a "zrodlo" na rok i numer zadania, jeśli da się je ustalić z tekstu.
+- Matematykę zapisuj znakami Unicode (², √, ×, ÷, ½, π). Język: polski.
+- Zwróć najwyżej 15 zadań.
+
+Odpowiedz WYŁĄCZNIE poprawnym JSON-em, bez komentarza i bez znaczników markdown:
+{"zadania":[{"typ":"wybor","rodzaj":"arkusz","dzial":"...","temat":"...","tresc":"...","odpowiedzi":["...","...","...","..."],"poprawna":"...","wyjasnienia_odpowiedzi":["...","...","...","..."],"wyjasnienie":"...","zrodlo":"E8 2024, zad. 1","punkty":1}]}`;
+
 const toText = (h) =>
   String(h || "")
     .replace(/<\/(p|div|li|h[1-6]|blockquote)>|<br\s*\/?>/gi, "\n")
@@ -117,11 +133,11 @@ export const parseMarks = (out, allowed) => {
   return marks;
 };
 
-export const parseTasks = (out) => {
+export const parseTasks = (out, max = 20) => {
   const d = firstJson(out);
   const z = Array.isArray(d.zadania) ? d.zadania : [];
   if (!z.length) throw new Error("brak zadań");
-  return { zadania: z.slice(0, 20) };
+  return { zadania: z.slice(0, max) };
 };
 
 // Dostawcy AI: najpierw darmowy Google Gemini (klucz z AI Studio), a jeśli go nie ma – Claude (płatny).
@@ -135,7 +151,7 @@ async function callGemini(sys, user) {
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: sys }] },
         contents: [{ role: "user", parts: [{ text: user }] }],
-        generationConfig: { responseMimeType: "application/json", maxOutputTokens: 8192, temperature: 0.5 },
+        generationConfig: { responseMimeType: "application/json", maxOutputTokens: 16384, temperature: 0.5 },
       }),
     });
     if (r.ok) {
@@ -162,7 +178,7 @@ async function callClaude(sys, user) {
     },
     body: JSON.stringify({
       model: process.env.AI_MODEL || "claude-haiku-5-5",
-      max_tokens: 8000,
+      max_tokens: 16000,
       system: sys,
       messages: [{ role: "user", content: user }],
     }),
@@ -179,12 +195,12 @@ export default async (req) => {
   if (!okPw(req)) return new Response("", { status: 401 });
   let body;
   try { body = await req.json(); } catch { return new Response("", { status: 400 }); }
-  const kind = ["fmt", "e8gen"].includes(body.kind) ? body.kind : "deck";
+  const kind = ["fmt", "e8gen", "e8sort"].includes(body.kind) ? body.kind : "deck";
   const id = String(body.id || "");
   if (!/^[\w-]{1,40}$/.test(id)) return new Response("", { status: 400 });
 
   const store = getStore({ name: "notatki", consistency: "strong" });
-  const key = kind === "deck" ? "g:" + id : "j:" + (kind === "fmt" ? "fmt-" : "gen-") + id;
+  const key = kind === "deck" ? "g:" + id : "j:" + (kind === "fmt" ? "fmt-" : kind === "e8sort" ? "sort-" : "gen-") + id;
   try {
     if (!process.env.GEMINI_API_KEY && !process.env.ANTHROPIC_API_KEY) throw new Error("nokey");
 
@@ -194,6 +210,19 @@ export default async (req) => {
       await store.setJSON(key, { status: "pending", ts: Date.now() });
       const user = `Przedmiot: ${str(body.subject, 80)}\nTemat: ${str(body.topic, 100)}\nLiczba zadań: ${count}\nTypy zadań: ${types.length ? types.join(", ") : "dowolne, urozmaicone"}`;
       const data = parseTasks(await ask(GEN_SYS, user));
+      await store.setJSON(key, { status: "done", ts: Date.now(), data });
+      return new Response("", { status: 202 });
+    }
+
+    if (kind === "e8sort") {
+      const text = String(body.text || "").trim().slice(0, 24000);
+      if (text.length < 40) throw new Error("short");
+      await store.setJSON(key, { status: "pending", ts: Date.now() });
+      const struct = (Array.isArray(body.structure) ? body.structure : []).slice(0, 50)
+        .map((d) => `Dział „${str(d && d.dzial, 80)}”: ${(Array.isArray(d && d.tematy) ? d.tematy : []).slice(0, 100).map((t) => "„" + str(t, 100) + "”").join(", ") || "(brak tematów)"}`).join("\n");
+      const fixed = str(body.section, 80);
+      const user = `Przedmiot: ${str(body.subject, 80)}\n${fixed ? `Wszystkie zadania przypisz do działu „${fixed}” (wybierz lub wymyśl temat).\n` : ""}Istniejąca struktura:\n${struct || "(jeszcze pusta – wymyśl działy i tematy)"}\n\nTREŚĆ ARKUSZA:\n${text}`;
+      const data = parseTasks(await ask(SORT_SYS, user), 40);
       await store.setJSON(key, { status: "done", ts: Date.now(), data });
       return new Response("", { status: 202 });
     }
