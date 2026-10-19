@@ -3,7 +3,7 @@
 <link rel="manifest" href="/manifest.json"><meta name="theme-color" content="#0b0d1f"><link rel="icon" type="image/png" href="/icon-192.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Notatki+"><meta name="apple-mobile-web-app-status-bar-style" content="default">
 <style>
-:root{--tx:#f4f6ff;--mu:#b4bbdc;--bg:#0b0d1f;--sf:#191c3a;--gb:rgba(255,255,255,.2);--ac:#7c8cff;--r:24px}
+:root{--ez:cubic-bezier(.22,1,.36,1);--tx:#f4f6ff;--mu:#b4bbdc;--bg:#0b0d1f;--sf:#191c3a;--gb:rgba(255,255,255,.2);--ac:#7c8cff;--r:24px}
 :root[data-theme=light]{--tx:#16182e;--mu:#4d5378;--bg:#e8ecff;--sf:#f6f8ff;--gb:rgba(255,255,255,.9)}
 [data-bg=aurora]{--b1:#6d5dfc;--b2:#19d3da;--b3:#ff6bd6}[data-bg=sunset]{--b1:#ff7a45;--b2:#ff3d81;--b3:#ffd166}[data-bg=ocean]{--b1:#0077ff;--b2:#00d4ff;--b3:#4b6cff}[data-bg=forest]{--b1:#1db954;--b2:#0fb5a0;--b3:#a3e635}[data-bg=mono]{--b1:#8890a8;--b2:#c9ceea;--b3:#5a607a}
 [data-ft=serif] body{font-family:Georgia,serif}[data-ft=mono] body{font-family:ui-monospace,Menlo,monospace}[data-ft=round] body{font-family:ui-rounded,'Trebuchet MS',sans-serif}
@@ -12,15 +12,15 @@
 body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,'Segoe UI',Roboto,sans-serif;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
 .bg{position:fixed;inset:0;z-index:-1;overflow:hidden;background:radial-gradient(60% 50% at 10% 5%,color-mix(in srgb,var(--b1) 55%,transparent),transparent),radial-gradient(60% 50% at 95% 95%,color-mix(in srgb,var(--b2) 50%,transparent),transparent)}
 .bg i{position:absolute;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--b3) 42%,transparent),transparent 65%);will-change:transform;animation:dr 22s ease-in-out infinite alternate}
-@keyframes dr{to{transform:translate3d(12vw,8vh,0) scale(1.25)}}@keyframes up{from{opacity:0;transform:translateY(18px)}}@keyframes pop{from{opacity:0;transform:scale(.92)}}
+@keyframes dr{to{transform:translate3d(12vw,8vh,0) scale(1.25)}}@keyframes up{from{opacity:0;transform:translateY(12px)}}@keyframes pop{from{opacity:0;transform:scale(.94)}}@keyframes fade{from{opacity:0}}@keyframes sheet{from{opacity:0;transform:translateY(26px) scale(.98)}}@keyframes shm{to{background-position:-200% 0}}
 .i{width:20px;height:20px;flex:none}.i.f{fill:currentColor}
-.g{background:linear-gradient(135deg,rgba(255,255,255,.17),rgba(255,255,255,.05));border:1px solid var(--gb);border-radius:var(--r);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),inset 0 -1px 0 rgba(255,255,255,.06),0 8px 22px rgba(0,0,0,.16)}
+.g{background:linear-gradient(135deg,rgba(255,255,255,.17),rgba(255,255,255,.05));border:1px solid var(--gb);border-radius:var(--r);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 6px 16px rgba(0,0,0,.14)}
 :root[data-theme=light] .g{background:linear-gradient(135deg,rgba(255,255,255,.8),rgba(255,255,255,.4))}
 [data-cs=flat] .g{background:rgba(127,127,160,.14);box-shadow:none;border-color:transparent}
 [data-cs=outline] .g{background:none;box-shadow:none;border:1.5px solid var(--gb)}
 .wrap{max-width:900px;margin:0 auto;padding:22px 14px 150px}
 header{display:flex;align-items:center;justify-content:space-between;gap:10px}
-h1{margin:0;font-size:clamp(28px,6vw,44px);background:linear-gradient(90deg,var(--tx),var(--ac),var(--tx));background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shn 6s linear infinite}@keyframes shn{to{background-position:-200% 0}}
+h1{margin:0;font-size:clamp(28px,6vw,44px);background:linear-gradient(90deg,var(--tx),var(--ac),var(--tx));background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent}
 .sub{color:var(--mu);margin:4px 0 0;font-size:14px}
 .btn,.chip{font:inherit;color:var(--tx);cursor:pointer;border:1px solid var(--gb);background:rgba(255,255,255,.12);border-radius:999px;padding:9px 15px;transition:transform .15s,background .15s;overflow:hidden;display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
 .btn:not(.fab),.chip{position:relative}.btn:active,.chip:active{transform:scale(.95)}.pr,.chip.on{background:var(--ac);color:#fff;border-color:transparent}.dg{color:#ff6b7f}
@@ -30,22 +30,22 @@ h1{margin:0;font-size:clamp(28px,6vw,44px);background:linear-gradient(90deg,var(
 .lb{font-size:12px;color:var(--mu);text-transform:uppercase;letter-spacing:.08em;margin:12px 0 6px}
 .sr{position:relative;margin-bottom:10px}.sr .i{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--mu)}.sr input{padding-left:42px;margin:0}
 .sg{display:flex;align-items:baseline;gap:8px;margin:22px 2px 10px;font-size:20px}.sg small{color:var(--mu);font-size:13px;font-weight:400}
-.in .ev,.in header{animation:up .45s both}.in .ev:nth-child(2){animation-delay:.05s}.in .ev:nth-child(3){animation-delay:.1s}.in .ev:nth-child(n+4){animation-delay:.15s}
+.in .ev,.in .sj,.in header{animation:up .4s var(--ez) both}.in .sj:nth-child(2){animation-delay:.04s}.in .sj:nth-child(3){animation-delay:.08s}.in .sj:nth-child(n+4){animation-delay:.12s}.in .ev:nth-child(2){animation-delay:.05s}.in .ev:nth-child(3){animation-delay:.1s}.in .ev:nth-child(n+4){animation-delay:.15s}
 .mt{color:var(--mu);font-size:13px}
 .ev{display:flex;gap:14px;align-items:center;padding:14px;margin-bottom:10px;border-left:4px solid var(--c);cursor:pointer;transition:transform .2s,box-shadow .2s}.ev:hover{transform:translateX(6px);box-shadow:0 10px 26px rgba(0,0,0,.28)}.ev.past{opacity:.55}.ev h3{margin:3px 0;display:flex;align-items:center;gap:6px}
 [data-ds=compact] .ev{padding:9px;margin-bottom:6px}[data-ds=compact] .ev .ic{width:40px;height:40px}[data-ds=roomy] .ev{padding:22px;margin-bottom:14px}
 .ev .ic{width:50px;height:50px;display:grid;place-items:center;border-radius:16px;background:color-mix(in srgb,var(--c) 28%,transparent);color:var(--c);flex:none}.ev .ic .i{width:26px;height:26px}
-.m{position:fixed;inset:0;z-index:80;background:rgba(5,6,20,.6);display:grid;place-items:center;padding:12px;animation:pop .2s both}
-.mb{width:min(560px,100%);max-height:92vh;overflow:auto;padding:18px;background:var(--sf)!important;color:var(--tx);animation:pop .3s both}.mb h2{margin-top:0}
+.m{position:fixed;inset:0;z-index:80;background:rgba(5,6,20,.6);display:grid;place-items:center;padding:12px;animation:fade .2s both}
+.mb{width:min(560px,100%);max-height:92vh;overflow:auto;padding:18px;background:var(--sf)!important;color:var(--tx);animation:sheet .36s var(--ez) both}.mb h2{margin-top:0}
 label{display:block;margin:9px 0;font-size:13px;color:var(--mu)}
 input,textarea,select{width:100%;margin-top:4px;font:inherit;color:var(--tx);background:rgba(255,255,255,.1);border:1px solid var(--gb);border-radius:12px;padding:10px 12px;outline:none}
 input[type=range],input[type=checkbox]{padding:0;width:auto}input[type=range]{width:100%}input[type=color]{height:40px;padding:3px}
 select option{color:#111}
-.fab{position:fixed;right:16px;bottom:calc(102px + env(safe-area-inset-bottom,0px));z-index:20;padding:14px 20px;box-shadow:0 8px 24px rgba(0,0,0,.35);animation:fb 2.6s ease-in-out infinite}@keyframes fb{50%{transform:translateY(-5px)}}
+.fab{position:fixed;right:16px;bottom:calc(102px + env(safe-area-inset-bottom,0px));z-index:20;padding:14px 20px;box-shadow:0 8px 24px rgba(0,0,0,.35);animation:pop .45s var(--ez) both}
 .empty{text-align:center;color:var(--mu);padding:36px}
 /* ---- CZYTNIK PEŁNOEKRANOWY ---- */
-.rd{--rff:system-ui;--fs:19px;--lh:1.75;--mw:100%;position:fixed;top:0;left:0;right:0;height:100vh;height:100dvh;z-index:60;display:flex;flex-direction:column;background:var(--rbg);color:var(--rtx);font-family:var(--rff);animation:rin .25s ease-out}
-@keyframes rin{from{opacity:0}}
+.rd{--rff:system-ui;--fs:19px;--lh:1.75;--mw:100%;position:fixed;top:0;left:0;right:0;height:100vh;height:100dvh;z-index:60;display:flex;flex-direction:column;background:var(--rbg);color:var(--rtx);font-family:var(--rff);animation:rin .3s var(--ez)}
+@keyframes rin{from{opacity:0;transform:translateY(18px)}}
 .rsc{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 .rd.t-night{--rbg:#0d1017;--rtx:#e9ecf5;--rmt:#9aa3bd;--rac:#8fa2ff;--rmk:rgba(255,213,79,.17);--rbd:rgba(255,255,255,.13)}
 .rd.t-paper{--rbg:#fbfaf6;--rtx:#1d1f27;--rmt:#6a6f80;--rac:#3b4bd8;--rmk:rgba(255,214,10,.33);--rbd:rgba(0,0,0,.12)}
@@ -63,11 +63,6 @@ select option{color:#111}
 .nt>*{margin-top:0;margin-bottom:.85em}.nt h2{font-size:1.45em;line-height:1.3;margin:1.2em 0 .4em}.nt ul,.nt ol{padding-left:1.15em;margin:.2em 0 .9em}.nt li{margin:.3em 0}
 .nt img{max-width:100%;border-radius:12px;display:block;margin:12px auto;cursor:zoom-in}.nt u{text-decoration-thickness:2px;text-underline-offset:3px;text-decoration-color:var(--rac)}
 .nt span[style*=background]{color:#111!important;border-radius:3px;padding:0 3px}
-.nt.auto .df{font-weight:700;color:var(--rac)}.nt.auto .nb{font-weight:700}.nt.auto .kw{font-weight:700;font-size:1.06em}
-.nt.auto .nq{text-decoration:underline;text-decoration-color:var(--rac);text-decoration-thickness:2px;text-underline-offset:4px}
-.nt.auto .mk{background:var(--rmk);border-left:4px solid var(--rac);padding:.35em .8em;border-radius:8px}
-.nt.auto .ah{font-size:1.3em;font-weight:800;margin-top:1.1em;color:var(--rac)}
-.nt.auto .dc::first-letter{font-size:2.7em;font-weight:800;float:left;line-height:.85;padding:.06em .1em 0 0;color:var(--rac)}
 .nt.ed{background:color-mix(in srgb,var(--rtx) 6%,var(--rbg));border-radius:14px;padding:14px;min-height:55vh;cursor:text}
 .rd input,.rd select{color:var(--rtx);background:color-mix(in srgb,var(--rtx) 8%,transparent);border:1px solid var(--rbd)}
 .rd .chip{color:var(--rtx);border-color:var(--rbd);background:none}.rd .chip.on{background:var(--ac);color:#fff}
@@ -106,7 +101,7 @@ select option{color:#111}
 :root[data-theme=light]{--pill:#ffffff;--pilla:rgba(20,22,46,.08);--pillb:rgba(20,22,46,.12)}
 .pn{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:30;display:flex;gap:2px;padding:6px;border-radius:999px;background:var(--pill);border:1px solid var(--pillb);box-shadow:0 12px 34px rgba(0,0,0,.4);max-width:calc(100vw - 16px)}
 .pi{display:flex;flex-direction:column;align-items:center;gap:3px;border:0;background:none;color:var(--mu);font:inherit;font-size:12.5px;padding:9px 0;width:clamp(62px,19vw,88px);border-radius:999px;cursor:pointer;transition:background .2s,color .2s,transform .15s}
-.pi .i{width:25px;height:25px}.pi.on{background:var(--pilla);color:var(--tx)}.pi:active{transform:scale(.94)}
+.pi{position:relative;z-index:1}.pi .i{width:25px;height:25px}.pi.on{color:var(--tx)}.pi:active{transform:scale(.94)}.pind{position:absolute;top:6px;bottom:6px;left:0;width:0;border-radius:999px;background:var(--pilla);transition:transform .38s var(--ez),width .38s var(--ez),opacity .2s;pointer-events:none}
 .rd.t-night,.rd.t-black{--wv:#8fb0ff}.rd.t-paper,.rd.t-sepia{--wv:#1e3a8a}
 .nt .wv{text-decoration:underline wavy var(--wv,#1e3a8a);text-decoration-thickness:2px;text-underline-offset:5px}
 .nt .tm{font-size:1.28em;line-height:1.35}.nt .tl{font-size:1.7em;line-height:1.25;font-weight:700}
@@ -139,6 +134,9 @@ select option{color:#111}
 .pdt{margin-top:12px}
 @media(max-width:899px){.pd.off{display:none}}
 @media(min-width:900px){.tkw{grid-template-columns:minmax(0,1fr) 400px}.tkw .pd{position:sticky;top:76px;align-self:start}.pdt{display:none}}
+.sk{height:78px;border-radius:var(--r);margin-bottom:10px;background:linear-gradient(90deg,rgba(127,127,160,.12) 25%,rgba(127,127,160,.26) 50%,rgba(127,127,160,.12) 75%);background-size:200% 100%;animation:shm 1.2s linear infinite}
+html.ovl .bg{visibility:hidden}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 .lbx{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.93);overflow:auto;display:flex;cursor:zoom-in;animation:pop .2s both}.lbx img{margin:auto;max-width:100%;max-height:100vh}.lbx.z{cursor:zoom-out}.lbx.z img{max-width:none;max-height:none;width:230%}
 .sp{position:fixed;inset:0;z-index:99;background:var(--bg);display:grid;place-items:center;transition:opacity .5s}.sp.out{opacity:0;pointer-events:none}
 .sp .lg{font-size:clamp(38px,12vw,84px);font-weight:800;display:flex;flex-wrap:wrap;justify-content:center}.sp span{animation:pop .6s calc(var(--i)*60ms) both;background:linear-gradient(var(--b1),var(--b2));-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -152,7 +150,7 @@ select option{color:#111}
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const DEF={mt:'Mniej szumu, więcej wiedzy.',nm:'Notatki+',ac:'#7c8cff',bg:'aurora',an:1,ft:'sys',th:'auto',r:24};
 let S={st:{...DEF},ev:[],ok:0,err:0},flt='all',sj='all',qv='',cur=null,R=null,isNew=false,dirty=0,lt=null,pw='',st_,it,ss;
-let P={sz:19,lh:1.75,w:'full',ff:'sans',th:'auto',au:1,dc:1,xf:'serif',cs:'glass',ds:'normal',ac:''};
+let P={sz:19,lh:1.75,w:'full',ff:'sans',th:'auto',xf:'serif',cs:'glass',ds:'normal',ac:''};
 try{lt=localStorage.getItem('th');pw=sessionStorage.getItem('pw')||'';Object.assign(P,JSON.parse(localStorage.getItem('pf')||'{}'))}catch(e){}
 const savP=()=>{try{localStorage.setItem('pf',JSON.stringify(P))}catch(e){}};
 const ED=()=>!!pw;
@@ -218,16 +216,20 @@ const closeM=()=>{const m=document.querySelectorAll('.m');m[m.length-1]?.remove(
 /* ---------- LISTA ---------- */
 const card=e=>{const t=TYX[e.ty]||TY.test,d=dd(e.d);return `<article class="g ev ${e.d&&d<0?'past':''}" data-a="open" data-id="${e.id}" style="--c:${t[2]}"><div class="ic">${ic(t[0])}</div><div><div class="mt">${t[1]}${e.l?' · lekcja '+e.l:''}</div><h3>${e.pin?ic('star','f'):''}${esc(e.ti||e.s||'Bez tytułu')}</h3><div class="mt">${e.d?fmt(e.d)+' · '+cd(d):''}${e.im?' · '+e.im+' zdj.':''}</div></div></article>`};
 const subjects=()=>[...new Set(S.ev.map(e=>e.s||'Inne'))].sort((x,y)=>x=='Inne'?1:y=='Inne'?-1:x.localeCompare(y,'pl'));
-function list(){if(!S.ok)return '<div class="empty g">Ładowanie…</div>';const q=qv.toLowerCase();
+function list(){if(!S.ok)return '<div class="sk"></div>'.repeat(4);const q=qv.toLowerCase();
 const a=S.ev.filter(e=>(flt=='all'||e.ty==flt)&&(sj=='all'||(e.s||'Inne')==sj)&&(!q||(e.ti+' '+e.s+' '+(e.tx||'')).toLowerCase().includes(q))).sort((a,b)=>(b.pin?1:0)-(a.pin?1:0)||(dd(a.d)<0)-(dd(b.d)<0)||(a.d<b.d?-1:1));
 if(!a.length)return '<div class="empty g">Nic tu jeszcze nie ma</div>';if(sj!='all')return a.map(card).join('');
 const g={};a.forEach(e=>(g[e.s||'Inne']=g[e.s||'Inne']||[]).push(e));
 return subjects().filter(k=>g[k]).map(k=>`<h2 class="sg">${esc(k)}<small>${g[k].length}</small></h2>`+g[k].map(card).join('')).join('')}
 function notes(){if(sj!='all'&&!subjects().includes(sj))sj='all';
 return `<div class="sr">${ic('search')}<input id="q" placeholder="Szukaj w notatkach…" value="${esc(qv)}"></div><div class="lb">Przedmiot</div><div class="chips sc"><button class="chip ${sj=='all'?'on':''}" data-a="sj" data-k="all">Wszystkie</button>${subjects().map(s=>`<button class="chip ${sj==s?'on':''}" data-a="sj" data-k="${esc(s)}">${esc(s)}</button>`).join('')}</div><div class="lb">Rodzaj</div><div class="chips sc"><button class="chip ${flt=='all'?'on':''}" data-a="flt" data-k="all">Wszystko</button>${Object.entries(TY).map(([k,t])=>`<button class="chip ${flt==k?'on':''}" data-a="flt" data-k="${k}">${ic(t[0])}${t[1]}</button>`).join('')}</div><div id="lst" style="margin-top:6px">${list()}</div>`}
-const pillNav=()=>`<nav class="pn">${[['notes','note','Notatki'],['e8','exam','E8'],['pref','palette','Wygląd'],['acct',ED()?'unlock':'lock',ED()?'Konto':'Zaloguj']].map(x=>`<button class="pi ${x[0]==view?'on':''}" data-a="nv" data-k="${x[0]}">${ic(x[1])}<span>${x[2]}</span></button>`).join('')}</nav>`;
+function updPill(){const pn=$('#pn');if(!pn)return;const items=[['notes','note','Notatki'],['e8','exam','E8'],['pref','palette','Wygląd'],['acct',ED()?'unlock':'lock',ED()?'Konto':'Zaloguj']],sig=items.map(x=>x[1]+x[2]).join();
+if(pn.dataset.sig!=sig){pn.innerHTML='<i class="pind"></i>'+items.map(x=>`<button class="pi" data-a="nv" data-k="${x[0]}">${ic(x[1])}<span>${x[2]}</span></button>`).join('');pn.dataset.sig=sig;pn._f=0}
+let on=null;pn.querySelectorAll('.pi').forEach(b=>{const a=b.dataset.k==view;b.classList.toggle('on',a);if(a)on=b});const ind=pn.querySelector('.pind');
+if(!on){ind.style.opacity=0;return}const first=!pn._f;pn._f=1;if(first)ind.style.transition='none';ind.style.opacity=1;ind.style.width=on.offsetWidth+'px';ind.style.transform=`translateX(${on.offsetLeft}px)`;if(first)requestAnimationFrame(()=>requestAnimationFrame(()=>{ind.style.transition=''}))}
+const ovl=()=>document.documentElement.classList.toggle('ovl',!!($('#rd')||$('#e8o')));
 function render(an){ap();const a=$('#app');a.className='wrap'+(an?' in':'');
-a.innerHTML=`<header><div><h1>${esc(S.st.nm)}</h1><p class="sub">${esc(S.st.mt||DEF.mt)}</p></div></header><div style="height:6px"></div>${view=='e8'?e8Home():S.err?'<div class="empty g">Nie można połączyć z serwerem. Odśwież stronę.</div>':notes()}${ED()&&view=='notes'?`<button class="btn pr fab" data-a="new">${ic('plus')}<span>Nowa notatka</span></button>`:''}${pillNav()}`}
+a.innerHTML=`<header><div><h1>${esc(S.st.nm)}</h1><p class="sub">${esc(S.st.mt||DEF.mt)}</p></div></header><div style="height:6px"></div>${view=='e8'?e8Home():S.err?'<div class="empty g">Nie można połączyć z serwerem. Odśwież stronę.</div>':notes()}${ED()&&view=='notes'?`<button class="btn pr fab" data-a="new">${ic('plus')}<span>Nowa notatka</span></button>`:''}`;updPill()}
 /* ---------- ZAPIS ---------- */
 const setStat=t=>{const e=$('#sv');if(e)e.textContent=t};
 const sched=()=>{dirty=1;clearTimeout(st_);st_=setTimeout(put,800);setStat('Zapisywanie…')};
@@ -243,21 +245,6 @@ function norm(h){const c=document.createElement('div');c.innerHTML=h;const o=doc
 function blocks(r){const o=[];r.querySelectorAll('p,div,li,h1,h2,h3,blockquote').forEach(e=>{if(!e.querySelector('p,div,li,h1,h2,h3,blockquote')){const t=e.textContent.replace(/\s+/g,' ').trim();if(t)o.push({e,t,h:/^H[1-3]$/.test(e.tagName)})}});return o}
 const STOP=new Set('które która który została zostało jest były była było oraz także gdzie przez jako przed jednak dlatego między innych swoje swojej jego tego tych tymi można należy bardzo więcej wszystko każdy każda ponieważ kiedy będzie zwane nazywa'.split(' '));
 function kwStems(r){const c={};(r.textContent.toLowerCase().match(/\p{L}{6,}/gu)||[]).forEach(w=>{if(STOP.has(w))return;const s=w.slice(0,5);c[s]=(c[s]||0)+1});return Object.entries(c).filter(x=>x[1]>=3).sort((a,b)=>b[1]-a[1]).slice(0,8).map(x=>x[0])}
-const rxK=st=>new RegExp('(?<![\\p{L}\\d])(?:(\\d{1,2}[./]\\d{1,2}[./]\\d{2,4})|((?:1[0-9]{3}|20[0-9]{2})(?!\\d))|([\\u201E\\u201C"\\u00AB][^\\u201E\\u201D\\u201C"\\u00AB\\u00BB]{2,60}[\\u201D\\u201C"\\u00BB])|(\\d+(?:[.,]\\d+)?\\s?(?:%|°C|km|cm|mm|kg|zł|m²|m)(?![\\p{L}]))'+(st.length?'|((?:'+st.join('|')+')\\p{L}{1,})':'')+')','giu');
-const ftn=e=>{const w=document.createTreeWalker(e,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode())if(n.nodeValue.trim())return n;return null};
-const DEF2=/^(\s*)([^:–—=]{2,45}?)(?=\s*(?::|–|—|=)\s|\s-\s)/;
-function autoFmt(root,dc=1){const bl=blocks(root),RX=rxK(kwStems(root));let prevH=true;
-bl.forEach((b,i)=>{const e=b.e,t=b.t,li=e.tagName=='LI';if(b.h){prevH=true;return}
-if(!li&&t.length<=48&&!/[.?!,;]$/.test(t)&&bl[i+1]&&!/[:–—]\s+\S/.test(t)&&!/\s-\s/.test(t)){e.classList.add('ah');prevH=true;return}
-if(/(ważne|pamiętaj|uwaga|zapamiętaj|wniosek|definicj)/i.test(t))e.classList.add('mk');
-const n=ftn(e),m=n&&n.nodeValue.match(DEF2);
-if(m&&m[2].trim().split(/\s+/).length<=6&&!MARK.test(m[2].trim())){const sp=document.createElement('span');sp.className='df';sp.textContent=m[2];n.nodeValue=n.nodeValue.slice(m[1].length+m[2].length);n.parentNode.insertBefore(sp,n);if(m[1])n.parentNode.insertBefore(document.createTextNode(m[1]),sp)}
-if(dc&&!li&&prevH&&t.length>60)e.classList.add('dc');prevH=false});
-const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT),L=[];let n;while(n=w.nextNode())L.push(n);
-L.forEach(n=>{if(!n.nodeValue.trim())return;const p=n.parentElement;if(!p||p.closest('b,strong,u,.df,.ah,h1,h2,h3,span[style],a,.wv,.tm,.tl'))return;
-const s=n.nodeValue.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-const h=s.replace(RX,(x,g1,g2,g3,g4,g5)=>g3?`<span class="nq">${x}</span>`:g5?`<b class="kw">${x}</b>`:`<b class="nb">${x}</b>`);
-if(h!==s){const t=document.createElement('template');t.innerHTML=h;n.replaceWith(t.content)}});return root}
 /* ---------- FISZKI I QUIZ (generowane z tekstu) ---------- */
 const MARK=/^(ważne|pamiętaj|uwaga|zapamiętaj|wniosek|definicja|przykład|notatka)$/i;
 const DEFRE=/^(.{2,60}?)(?:\s+[–—-]\s+|:\s+|\s=\s)(.{8,})$/;
@@ -313,8 +300,8 @@ const rvars=()=>`--fs:${P.sz}px;--lh:${P.lh};--mw:${{n:'62ch',m:'78ch',w:'100ch'
 const rb=(a,n,t,c='')=>`<button class="rb ${c}" data-a="${a}" title="${t}" aria-label="${t}">${ic(n)}</button>`;
 const noEmpty='<div class="empty">Za mało materiału. Dodaj w notatce definicje („Pojęcie – wyjaśnienie” albo „Pojęcie to …”), nagłówki z listami albo zdania z datami i nazwami, a fiszki i quiz utworzą się same.<br><br>Możesz też zapisać własną fiszkę: <b>pytanie :: odpowiedź</b></div>';
 const noEmptyF=()=>noEmpty+(ED()?'<div class="rrow"><button class="rbtn pr" data-a="dk">'+ic('deck')+'Otwórz edytor fiszek i quizu</button></div>':'');
-function readHTML(){const e=R.e,t=TYX[e.ty]||TY.test,r=norm(clean(e.h));if(P.au)autoFmt(r,P.dc);
-return `<div class="rbody"><div class="rmeta"><span class="tp" style="--c:${t[2]}">${ic(t[0])}${t[1]}</span>${e.s?`<span>${esc(e.s)}</span>`:''}${e.l?`<span>lekcja ${e.l}</span>`:''}${e.d?`<span>${fmt(e.d)}</span>`:''}</div><h1 class="rt">${esc(e.ti||e.s||'Notatka')}</h1><div id="e-h" class="nt${P.au?' auto':''}">${r.innerHTML||'<span style="opacity:.6">Brak treści.</span>'}</div></div>`}
+function readHTML(){const e=R.e,t=TYX[e.ty]||TY.test,r=norm(clean(e.h));
+return `<div class="rbody"><div class="rmeta"><span class="tp" style="--c:${t[2]}">${ic(t[0])}${t[1]}</span>${e.s?`<span>${esc(e.s)}</span>`:''}${e.l?`<span>lekcja ${e.l}</span>`:''}${e.d?`<span>${fmt(e.d)}</span>`:''}</div><h1 class="rt">${esc(e.ti||e.s||'Notatka')}</h1><div id="e-h" class="nt">${r.innerHTML||'<span style="opacity:.6">Brak treści.</span>'}</div></div>`}
 function editHTML(){const e=R.e,subs=[...new Set(TT.flat())];
 const sw=['#fff176','#a7f3d0','#fbcfe8','#bae6fd','#fed7aa'],fc=['#e11d48','#2563eb','#16a34a','#9333ea'],B=(c,n,v,x='')=>`<button data-c="${c}" ${v?`data-v="${v}"`:''} title="${x}">${ic(n)}</button>`;
 return `<div class="rbody"><div class="chips">${Object.entries(TY).map(([k,v])=>`<button class="chip ${k==e.ty?'on':''}" data-a="ty" data-k="${k}">${ic(v[0])}${v[1]}</button>`).join('')}</div><div class="two"><input id="e-d" type="date" value="${e.d}"><select id="e-l">${lopts(e)}</select></div><input id="e-s" list="sl" placeholder="Przedmiot (uzupełni się z lekcji)" value="${esc(e.s)}"><datalist id="sl">${subs.map(s=>`<option value="${esc(s)}">`).join('')}</datalist><input id="e-t" class="ti" placeholder="Tytuł" value="${esc(e.ti)}" style="margin-top:8px">
@@ -400,7 +387,7 @@ return `<div class="rbody">${hd}${d.quiz.map((q,i)=>`<div class="ei">${top(i+1,i
 const aiDeck=d=>({cards:d.cards.map((c,i)=>({q:c.q,a:c.a,k:'AI',id:i})),quiz:shuf(d.quiz.map(q=>{const a=q.opts[q.ans],o=shuf(q.opts);return{q:q.q,opts:o,ans:o.indexOf(a),ex:q.ex||''}}))});
 async function genAI(){if(!R||R.busy)return;const id=R.e.id,prev=R.ai?R.ai.ts:0;R.busy=1;toast('AI tworzy fiszki i quiz… to może potrwać do minuty');
 try{const r=await fetch('/.netlify/functions/ai-background',{method:'POST',headers:{'content-type':'application/json','x-admin-password':pw},body:JSON.stringify({id})});if(r.status==401){logout();if(R)R.busy=0;return toast('Zaloguj się ponownie')}if(r.status>=400)throw 0;
-for(let i=0;i<45;i++){await new Promise(x=>setTimeout(x,3000));if(!R||R.e.id!=id)return;const g=await api('ai/'+id).catch(()=>null);if(!g||!(g.ts>prev))continue;
+for(let i=0;i<68;i++){await new Promise(x=>setTimeout(x,2000));if(!R||R.e.id!=id)return;const g=await api('ai/'+id).catch(()=>null);if(!g||!(g.ts>prev))continue;
 if(g.status=='error'){R.busy=0;return toast('AI: '+(g.msg=='short'?'notatka jest za krótka':g.msg=='nokey'?'brak klucza API w Netlify':/ 429$/.test(g.msg)?'limit darmowego AI, spróbuj za minutę':/ (400|401|403|404)$/.test(g.msg)?'sprawdź klucz API w Netlify':'błąd ('+g.msg+')'))}
 if(g.status=='done'){R.ai=g;R.base=null;R.g=null;R.c=null;R.z=null;R.busy=0;conf();toast('Fiszki i quiz AI gotowe');if(R.m=='cards'||R.m=='quiz')show(R.m);return}}
 throw 0}catch(e){if(R)R.busy=0;toast('Nie udało się wygenerować – sprawdź klucz API w Netlify')}}
@@ -418,9 +405,12 @@ if(m=='edit'){try{document.execCommand('styleWithCSS',false,true)}catch(x){}wc()
 function upd(){const b=$('#rd .rbody');if(b)b.outerHTML=R.m=='cards'?cardsHTML():quizHTML()}
 function rscroll(ev){const sc=ev.currentTarget,o=sc.closest('.rd');if(!o)return;const y=sc.scrollTop,d=y-(sc._y||0);sc._y=y;const noHide=o.id=='rd'?(R&&(R.m=='edit'||R.m=='deck')):(X&&X.edit),bar=o.querySelector('.rbar');if(bar&&!noHide){if(d>8&&y>90)bar.classList.add('h');else if(d<-8)bar.classList.remove('h')}const p=o.querySelector('.rprog');if(p){const mx=sc.scrollHeight-sc.clientHeight;p.style.width=(mx>0?y/mx*100:0)+'%'}}
 async function openNote(id){let e;
-let ai=null,dk=null,dkE=0;if(id){const m=modal('<div class="empty">Ładowanie…</div>');try{const[n,g,k]=await Promise.all([api('notes/'+id),api('ai/'+id).catch(()=>null),api('deck/'+id).catch(x=>({__e:x}))]);e=n;if(g&&g.status=='done'&&g.cards)ai=g;if(k&&k.__e)dkE=k.__e;else if(k&&((k.cards||[]).length||(k.quiz||[]).length))dk=k}catch(x){m.remove();return toast('Nie udało się otworzyć notatki')}m.remove()}
+if(id){const m=modal('<div class="sk" style="margin:0"></div>');try{e=await api('notes/'+id)}catch(x){m.remove();return toast('Nie udało się otworzyć notatki')}m.remove()}
 else e={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),ty:flt!='all'?flt:'test',s:sj!='all'&&sj!='Inne'?sj:'',l:'',d:today(),ti:'',h:'',pin:0};
-isNew=!id;dirty=0;cur=e;e.h=clean(e.h||'');e.tx=e.h.replace(/<[^>]*>/g,' ');R={e,m:'',g:null,c:null,z:null,ai,dk};if(dkE&&ED())toast(dkE==404?'Serwer nie obsługuje jeszcze fiszek – wgraj nowy api.mjs na GitHub':'Nie udało się pobrać zapisanych fiszek');show(id?'read':'edit')}
+isNew=!id;dirty=0;cur=e;e.h=clean(e.h||'');e.tx=e.h.replace(/<[^>]*>/g,' ');R={e,m:'',g:null,c:null,z:null,ai:null,dk:null};show(id?'read':'edit');
+if(id)Promise.all([api('ai/'+id).catch(()=>null),api('deck/'+id).catch(x=>({__e:x}))]).then(([g,k])=>{if(!R||R.e.id!=id)return;let ch=0;if(g&&g.status=='done'&&g.cards){R.ai=g;ch=1}
+if(k&&k.__e){if(ED())toast(k.__e==404?'Serwer nie obsługuje jeszcze fiszek – wgraj nowy api.mjs na GitHub':'Nie udało się pobrać zapisanych fiszek')}else if(k&&((k.cards||[]).length||(k.quiz||[]).length)){R.dk=k;ch=1}
+if(ch){R.base=null;R.g=null;R.c=null;R.z=null;if(R.m=='cards'||R.m=='quiz')show(R.m)}})}
 async function closeRd(){if(R&&R.m=='deck')await saveDeck();$('#rd')?.remove();cur=null;R=null;render()}
 function pf(){if(X&&X.edit&&e8T)e8Save();if(!R)return;if(R.m=='deck'&&dkT)saveDeck();else if(R.m=='edit'&&(it||st_)){flush();clearTimeout(st_);put()}}
 addEventListener('pagehide',pf);document.addEventListener('visibilitychange',()=>{if(document.hidden)pf()});
@@ -438,7 +428,7 @@ function xcss(){const ac=`color-mix(in srgb,${P.ac||S.st.ac} 72%,#000)`,F=XF[P.x
 .xp .dc::first-letter{font-size:2.7em;font-weight:700;float:left;line-height:.85;padding:.06em .1em 0 0;color:${ac}}
 .xp .wv{text-decoration:underline wavy #1e3a8a;text-decoration-thickness:2px;text-underline-offset:5px}.xp .tm{font-size:1.28em;line-height:1.35}.xp .tl{font-size:1.7em;line-height:1.25;font-weight:700}
 .xp footer{margin-top:26px;padding-top:10px;border-top:1px solid #e6e3da;color:#8a8d99;font:12px 'Segoe UI',Roboto,Arial,sans-serif}`}
-function xhtml(e){const t=TYX[e.ty]||TY.test,r=norm(clean(e.h));if(P.au)autoFmt(r,P.dc);return `<style>${xcss()}</style><article class="xp"><div class="xm">${t[1]}${e.s?' · '+esc(e.s):''}${e.l?' · lekcja '+e.l:''}${e.d?' · '+fmt(e.d):''}</div><h1>${esc(e.ti||e.s||'Notatka')}</h1><div class="xb">${r.innerHTML}</div><footer>${esc(S.st.nm)}</footer></article>`}
+function xhtml(e){const t=TYX[e.ty]||TY.test,r=norm(clean(e.h));return `<style>${xcss()}</style><article class="xp"><div class="xm">${t[1]}${e.s?' · '+esc(e.s):''}${e.l?' · lekcja '+e.l:''}${e.d?' · '+fmt(e.d):''}</div><h1>${esc(e.ti||e.s||'Notatka')}</h1><div class="xb">${r.innerHTML}</div><footer>${esc(S.st.nm)}</footer></article>`}
 function pdf(){const p=document.createElement('div');p.id='pr';p.innerHTML=xhtml(R.e);document.body.append(p);document.body.classList.add('printing');toast('Wybierz „Zapisz jako PDF”');setTimeout(()=>print(),400)}
 window.onafterprint=()=>{$('#pr')?.remove();document.body.classList.remove('printing')};
 async function jpg(){const e=R.e,W=820,box=document.createElement('div');box.innerHTML=xhtml(e);box.style.cssText='position:fixed;left:-9999px;top:0;width:'+W+'px';document.body.append(box);
@@ -458,8 +448,6 @@ ${ip?`<div class="row" style="justify-content:flex-start;margin:0 0 6px"><button
 <label>Szerokość tekstu${sel('w',[['full','Pełny ekran'],['w','Szeroka'],['m','Średnia'],['n','Wąska']])}</label>
 <label>Czcionka tekstu${sel('ff',[['sans','Bezszeryfowa'],['serif','Szeryfowa (książkowa)'],['round','Zaokrąglona'],['mono','Maszynowa']])}</label>
 <label>Motyw czytania${sel('th',[['auto','Jak aplikacja'],['night','Noc'],['black','Czerń (OLED)'],['paper','Papier'],['sepia','Sepia']])}</label>
-<label><input type="checkbox" data-p="au" ${P.au?'checked':''}> Automatyczne wyróżnianie (pogrubienia, podkreślenia, nagłówki)</label>
-<label><input type="checkbox" data-p="dc" ${P.dc?'checked':''}> Powiększone pierwsze litery akapitów</label>
 <label>Czcionka PDF i JPG${sel('xf',[['serif','Książkowa (szeryfowa)'],['sans','Nowoczesna'],['round','Zaokrąglona']])}</label>
 <label>Styl kart na liście${sel('cs',[['glass','Szkło'],['flat','Płaskie'],['outline','Kontur']])}</label>
 <label>Gęstość listy${sel('ds',[['compact','Zwarta'],['normal','Normalna'],['roomy','Przestronna']])}</label>
@@ -472,7 +460,7 @@ function lbx(src){const l=document.createElement('div');l.className='lbx';l.inne
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const errMsg=m=>m=='short'?'notatka jest za krótka':m=='nokey'?'brak klucza AI w Netlify':/ 429$/.test(m||'')?'limit darmowego AI, spróbuj za minutę':/ (400|401|403|404)$/.test(m||'')?'sprawdź klucz API w Netlify':m=='timeout'?'AI odpowiada zbyt długo':'błąd ('+m+')';
 async function runJob(body,key){const prev=((await api('job/'+key).catch(()=>null))||{}).ts||0;const r=await fetch('/.netlify/functions/ai-background',{method:'POST',headers:{'content-type':'application/json','x-admin-password':pw},body:JSON.stringify(body)});if(r.status==401){logout();throw 'Zaloguj się ponownie'}if(r.status>=400)throw 'srv';
-for(let i=0;i<50;i++){await sleep(3000);const g=await api('job/'+key).catch(()=>null);if(g&&g.ts>prev&&g.status!='pending'){if(g.status=='error')throw g.msg||'err';return g}}throw 'timeout'}
+for(let i=0;i<75;i++){await sleep(2000);const g=await api('job/'+key).catch(()=>null);if(g&&g.ts>prev&&g.status!='pending'){if(g.status=='error')throw g.msg||'err';return g}}throw 'timeout'}
 function fmtWrap(cls){const s=getSelection(),h=$('#e-h');if(!h||!s.rangeCount||s.isCollapsed||!h.contains(s.anchorNode)||!h.contains(s.focusNode))return toast('Zaznacz fragment tekstu');const r=s.getRangeAt(0);
 if(!cls){[...h.querySelectorAll('.wv,.tm,.tl')].filter(e=>r.intersectsNode(e)).forEach(e=>e.replaceWith(...e.childNodes));s.removeAllRanges();h.normalize();chg();return}
 const fr=r.extractContents();fr.querySelectorAll('.wv,.tm,.tl').forEach(e=>e.replaceWith(...e.childNodes));
@@ -542,7 +530,7 @@ const curSec=()=>{const s=curSub();return s&&s.sections.find(x=>x.id==E.did)};
 const prog=tid=>{try{return JSON.parse(localStorage.getItem('e8p:'+tid)||'{}')}catch(e){return{}}};
 const okN=tid=>Object.values(prog(tid)).filter(s=>s&&s.r=='ok').length;
 async function loadE8(){try{E8.tree=normTree(await api('e8'));E8.err=0}catch(x){E8.err=x}if(view=='e8'&&!X)render()}
-function e8Home(){if(!E8.tree&&!E8.err)return '<div class="empty g">Ładowanie…</div>';
+function e8Home(){if(!E8.tree&&!E8.err)return '<div class="sk"></div>'.repeat(3);
 const T=e8tree(),demo=isDemo(),adm=ED()&&!!E8.tree&&!demo;
 const note=demo?`<div class="g inf">${E8.err?(ED()?'Serwer nie ma jeszcze obsługi E8 – wgraj nowy api.mjs na GitHub. Poniżej przykładowe zadania.':'Zadania E8 są chwilowo niedostępne. Poniżej przykład.'):(ED()?'To przykładowe ćwiczenia. Dodaj własny przedmiot, a przykład zniknie.':'Administrator doda tu zadania egzaminacyjne. Poniżej przykład.')}</div>`:'';
 const stat=ts=>{const n=ts.reduce((a,t)=>a+(t.count||0),0),ok=ts.reduce((a,t)=>a+okN(t.id),0);return{n,ok,w:n?ok/n*100:0}};
@@ -552,7 +540,7 @@ const crumb=t=>`<div class="crumb"><button class="btn ib" data-a="e8b" aria-labe
 const s=E.sid&&T.subjects.find(x=>x.id==E.sid);if(!s){E.sid=null;E.did=null}
 if(!s)return note+`<div class="sub-grid">${T.subjects.map(x=>{const st=stat(x.sections.flatMap(d=>d.topics));return `<article class="g sj" data-a="e8s" data-id="${x.id}"><div>${ic('folder')}${ctl('e8s',x.id)}</div><h3>${esc(x.name)}</h3><span class="mt">${x.sections.length} działów · ${st.n} zadań</span><div class="pbar"><i style="width:${st.w}%"></i></div></article>`}).join('')}</div>${addBtn('e8sa','Dodaj przedmiot','',1)}`;
 const d=E.did&&s.sections.find(x=>x.id==E.did);if(!d)E.did=null;
-if(!d)return note+crumb(esc(s.name))+(s.sections.map(x=>{const st=stat(x.topics);return `<article class="g ev" data-a="e8d" data-id="${x.id}" style="--c:var(--ac)"><div class="ic">${ic('folder')}</div><div style="flex:1;min-width:0"><h3>${esc(x.name)}</h3><div class="mt">${x.topics.length} tematów · ${st.n} zadań · poprawnie ${st.ok}</div><div class="pbar"><i style="width:${st.w}%"></i></div></div>${ctl('e8d',x.id)}</article>`}).join('')||'<div class="empty g">Brak działów. Dodaj pierwszy, np. „Liczby”.</div>')+addBtn('e8da','Dodaj dział');
+if(!d)return note+crumb(esc(s.name))+(s.sections.map(x=>{const st=stat(x.topics);return `<article class="g ev" data-a="e8d" data-id="${x.id}" style="--c:var(--ac)"><div class="ic">${ic('folder')}</div><div style="flex:1;min-width:0"><h3>${esc(x.name)}</h3><div class="mt">${x.topics.length} tematów · ${st.n} zadań · poprawnie ${st.ok}</div><div class="pbar"><i style="width:${st.w}%"></i></div></div>${ctl('e8d',x.id)}</article>`}).join('')||'<div class="empty g">Brak działów. Dodaj pierwszy, np. „Liczby”.</div>')+addBtn('e8da','Dodaj dział',`<button class="btn" data-a="e8ims">${ic('spark')}Importuj arkusz (AI robi działy i tematy)</button>`);
 return note+crumb(`${esc(s.name)} <span class="mt" style="font-weight:400">›</span> ${esc(d.name)}`)+(d.topics.map(t=>{const st=stat([t]);return `<article class="g ev" data-a="e8t" data-id="${t.id}" style="--c:var(--ac)"><div class="ic">${ic('exam')}</div><div style="flex:1;min-width:0"><h3>${esc(t.name)}</h3><div class="mt">${st.n} zadań · poprawnie ${st.ok}</div><div class="pbar"><i style="width:${st.w}%"></i></div></div>${ctl('e8t',t.id)}</article>`}).join('')||'<div class="empty g">Brak tematów w tym dziale.</div>')+addBtn('e8ta','Dodaj temat',`<button class="btn" data-a="e8imd">${ic('upload')}Importuj do tematów</button>`)}
 /* drzewo: dodawanie, zmiana nazw, usuwanie */
 function e8Name(title,val,cb){E8cb=cb;modal(`<h2>${title}</h2><label>Nazwa<input id="e8n" value="${esc(val||'')}" maxlength="80"></label><div class="row"><button class="btn" data-a="sc">Anuluj</button><button class="btn pr" data-a="e8ok">Zapisz</button></div>`);setTimeout(()=>$('#e8n')?.focus(),60)}
@@ -668,7 +656,7 @@ const arr=Array.isArray(o)?o:(o&&(o.zadania||o.tasks||o.items||o.zadanie))||[],t
 (Array.isArray(arr)?arr:[]).forEach(x=>{const q=S(pick(x,'tresc','treść','polecenie','pytanie','q','question')),ex=S(pick(x,'wyjasnienie','wyjaśnienie','explanation','ex','uzasadnienie')),src=S(pick(x,'zrodlo','źródło','source','src')),kind=/cw|ćwicz|cwicz|exerc|wymy/i.test(S(pick(x,'rodzaj','kind','origin')))?'cw':'cke',pts=+pick(x,'punkty','pts','points')||0;
 const tyr=String(pick(x,'typ','type')).toLowerCase(),stRaw=pick(x,'zdania','statements','st','twierdzenia'),opRaw=pick(x,'odpowiedzi','opcje','options','opts','answers','choices','warianty');
 const ty=/prawd|tf|true|fa[lł]sz/.test(tyr)?'tf':/liczb|num|krótk|krotk/.test(tyr)?'num':/otwar|open/.test(tyr)?'open':/wyb|choice|zamkn|abcd/.test(tyr)?'choice':Array.isArray(stRaw)?'tf':Array.isArray(opRaw)?'choice':pick(x,'rozwiazanie','rozwiązanie','solution','sol')?'open':'num';
-const b={id:uid(),type:ty,kind,q,img:'',opts:[],exo:[],ans:0,st:[],num:'',sol:'',ex,src:src||(kind=='cw'?'Ćwiczenie':''),pts,temat:S(pick(x,'temat','topic','tematyka'))};if(!q){skipped++;return}
+const b={id:uid(),type:ty,kind,q,img:'',opts:[],exo:[],ans:0,st:[],num:'',sol:'',ex,src:src||(kind=='cw'?'Ćwiczenie':''),pts,temat:S(pick(x,'temat','topic','tematyka')),dzial:S(pick(x,'dzial','dział','section'))};if(!q){skipped++;return}
 if(ty=='choice'){const c=choiceFrom(x,pick,S);if(c.opts.length<2||c.opts.length>6||c.ans<0||c.ans>=c.opts.length){skipped++;return}Object.assign(b,c)}
 else if(ty=='tf'){b.st=(Array.isArray(stRaw)?stRaw:[]).map(z=>({t:S(pick(z,'tekst','text','t','zdanie','twierdzenie')),v:tb(pick(z,'prawda','true','v','poprawne','wartosc','wartość','odpowiedz','answer')),w:S(pick(z,'wyjasnienie','wyjaśnienie','w','explanation'))})).filter(z=>z.t).slice(0,8);if(!b.st.length){skipped++;return}}
 else if(ty=='num'){b.num=S(pick(x,'poprawna','odpowiedz','odpowiedź','answer','num','wynik'));if(!b.num){skipped++;return}}
@@ -684,31 +672,44 @@ function i8Modal(){modal(`<h2>Import zadań</h2><p class="mt" style="margin-top:
 <div class="row"><button class="btn" data-a="sc">Anuluj</button><button class="btn pr" data-a="i8go">Importuj</button></div>`);
 $('#i8-f').onchange=async e=>{const f=e.target.files[0];if(!f)return;$('#i8-t').value=await f.text();i8Prev()}}
 const nrm=v=>String(v||'').toLowerCase().replace(/\s+/g,' ').trim();
-const e8PSec=()=>{const d=curSec(),FM8=E8FMT.replace(/"rodzaj":"arkusz",/g,'"rodzaj":"arkusz","temat":"nazwa tematu",');return `Poniżej jest arkusz egzaminacyjny (egzamin ósmoklasisty) z przedmiotu „${curSub().name}”. Przepisz z niego zadania z działu „${d.name}” do formatu JSON, bez zmieniania ich treści (jeśli dołączę zdjęcie, odczytaj treść z niego). Każde zadanie przypisz do tematu.
+function e8PImp(lvl){const s=curSub(),d=lvl=='sec'?curSec():null,struct=(d?[d]:s.sections).map(x=>`Dział „${x.name}”: tematy ${x.topics.map(t=>'„'+t.name+'”').join(', ')||'(jeszcze brak)'}`).join('\n')||'(struktura jest jeszcze pusta)',FM8=E8FMT.replace(/"rodzaj":"arkusz",/g,'"rodzaj":"arkusz",'+(d?'':'"dzial":"nazwa działu",')+'"temat":"nazwa tematu",');
+return `Poniżej jest arkusz egzaminacyjny (egzamin ósmoklasisty) z przedmiotu „${s.name}”. Przepisz z niego zadania do formatu JSON, bez zmieniania ich treści (jeśli dołączę zdjęcie, odczytaj treść z niego). ${d?`Wszystkie zadania przypisz do działu „${d.name}”, a każde do jednego z jego tematów.`:'Każde zadanie przypisz do działu i tematu.'}
 
-Tematy w tym dziale: ${d.topics.map(t=>'„'+t.name+'”').join(', ')||'(jeszcze brak – wymyśl krótkie nazwy tematów)'}.
-W polu "temat" wpisz DOKŁADNIE nazwę jednego z tych tematów, do którego zadanie pasuje. Jeśli żaden nie pasuje, wpisz nową, krótką nazwę tematu (utworzę ją automatycznie). W polu "rodzaj" wpisz "arkusz", a w "zrodlo" rok i numer zadania z arkusza. Wyjaśnienia napisz własnymi słowami.
+Istniejąca struktura:
+${struct}
+
+${d?'W polu "temat"':'W polach "dzial" i "temat"'} użyj DOKŁADNIE nazw z istniejącej struktury, jeśli zadanie do nich pasuje. Jeśli nie pasuje, wymyśl ${d?'nową, krótką nazwę tematu':'nową, krótką nazwę działu zgodną z podstawą programową (np. „Liczby i działania”, „Geometria”, „Algebra”) i nową nazwę tematu'} – utworzę ${d?'ją':'je'} automatycznie. W polu "rodzaj" wpisz "arkusz", a w "zrodlo" rok i numer zadania z arkusza. Wyjaśnienia napisz własnymi słowami.
 
 ${e8RULES}
-- W każdym zadaniu dodaj pole "temat".
+- W każdym zadaniu dodaj ${d?'pole "temat"':'pola "dzial" i "temat"'}.
 
 Odpowiedz WYŁĄCZNIE jednym blokiem JSON, bez komentarza, w formacie:
-${FM8}`};
-function groupBy(tasks,d){const gs=[];tasks.forEach(t=>{const nm=(t.temat||'').trim()||'Inne zadania',key=nrm(nm);let g=gs.find(x=>x.key==key);if(!g){const ex=d.topics.find(x=>nrm(x.name)==key);g={key,name:ex?ex.name:nm,tid:ex?ex.id:null,tasks:[]};gs.push(g)}g.tasks.push(t)});return gs}
-function iDPrev(){const t=$('#id-t'),i=$('#id-s');if(!t||!i)return;const p=t.value.trim()?parseE8(t.value):null;if(!p||!p.tasks.length){i.textContent=i8Info(p);i.style.color='';return}const gs=groupBy(p.tasks,curSec());i.innerHTML=esc(i8Info(p))+'<br>'+gs.map(g=>`${esc(g.name)}: <b>${g.tasks.length}</b>${g.tid?'':' (nowy temat)'}`).join(' · ');i.style.color='#22c55e'}
-function iDModal(){modal(`<h2>Import do tematów</h2><p class="mt" style="margin-top:-6px">Jeden arkusz możesz wczytać naraz do wielu tematów tego działu. AI przypisze każde zadanie do tematu, a brakujące tematy utworzę automatycznie.<br>1) Skopiuj prompt i wklej go do dowolnego AI razem z arkuszem lub jego zdjęciem.<br>2) Odpowiedź wklej poniżej albo wczytaj z pliku.</p>
-<div class="row" style="justify-content:flex-start;margin:0 0 10px"><button class="btn" data-a="idcp">${ic('copy')}Skopiuj prompt</button></div>
-<textarea id="id-t" rows="8" placeholder="Wklej tu odpowiedź AI (JSON z zadaniami)…"></textarea>
+${FM8}`}
+function groupBy2(tasks,sub,fixDid){const gs=[],secs=sub.sections;tasks.forEach(t=>{const dn=fixDid?'':((t.dzial||'').trim()||'Inne'),tn=(t.temat||'').trim()||'Inne zadania',sec=fixDid?secs.find(x=>x.id==fixDid):secs.find(x=>nrm(x.name)==nrm(dn)),key=(fixDid||nrm(dn))+'|'+nrm(tn);let g=gs.find(x=>x.key==key);
+if(!g){const top=sec&&sec.topics.find(x=>nrm(x.name)==nrm(tn));g={key,secId:sec?sec.id:null,secName:sec?sec.name:dn,topName:top?top.name:tn,tid:top?top.id:null,tasks:[]};gs.push(g)}g.tasks.push(t)});return gs}
+function iDPrev(){const t=$('#id-t'),i=$('#id-s');if(!t||!i)return;const p=t.value.trim()?parseE8(t.value):null;if(!p||!p.tasks.length){i.textContent=i8Info(p);i.style.color='';return}
+const gs=groupBy2(p.tasks,curSub(),E.imp=='sec'?E.did:null),sec=E.imp=='sec';i.innerHTML=esc(i8Info(p))+'<br>'+gs.map(g=>`${sec?'':esc(g.secName)+' › '}${esc(g.topName)}: <b>${g.tasks.length}</b>${g.tid?'':(g.secId?' (nowy temat)':' (nowy dział)')}`).join('<br>');i.style.color='#22c55e'}
+function iModal(lvl){E.imp=lvl;const sub=lvl=='sub';modal(`<h2>${sub?'Import do przedmiotu':'Import do tematów'}</h2><p class="mt" style="margin-top:-6px">${sub?'Wczytaj cały arkusz naraz. AI sama utworzy działy i tematy i rozdzieli zadania.':'Wczytaj arkusz do wielu tematów tego działu. AI przypisze zadania do tematów, a brakujące tematy utworzę.'}</p>
+<div class="lb" style="margin-top:6px">Sposób 1: wbudowane AI</div>
+<textarea id="id-raw" rows="4" placeholder="Wklej tu treść arkusza (sam tekst). AI zrobi z niej zadania i je posegreguje…"></textarea>
+<div class="row" style="justify-content:flex-start;margin:6px 0 4px"><button class="btn pr" id="id-ai" data-a="idai">${ic('spark')}Zrób to wbudowanym AI</button></div>
+<div class="lb">Sposób 2: dowolne inne AI (możesz wysłać zdjęcie arkusza)</div>
+<div class="row" style="justify-content:flex-start;margin:0 0 8px"><button class="btn" data-a="idcp">${ic('copy')}Skopiuj prompt</button></div>
+<textarea id="id-t" rows="6" placeholder="Wklej tu odpowiedź AI (JSON z zadaniami)…"></textarea>
 <div class="row" style="justify-content:flex-start;margin:8px 0"><label class="btn" style="margin:0;color:var(--tx)">${ic('upload')}Wybierz plik<input type="file" id="id-f" accept=".json,.txt,.md,application/json,text/plain" hidden></label></div>
 <div id="id-s" class="mt">Wklej odpowiedź AI albo wybierz plik.</div>
 <div class="row"><button class="btn" data-a="sc">Anuluj</button><button class="btn pr" data-a="idgo">Importuj</button></div>`);
 $('#id-f').onchange=async e=>{const f=e.target.files[0];if(!f)return;$('#id-t').value=await f.text();iDPrev()}}
-async function iDgo(){const p=parseE8(($('#id-t')||{}).value);if(!p.tasks.length)return toast('Nie rozpoznano zadań');const sid=E.sid,did=E.did;closeM();
-const sec=()=>{const s=E8.tree.subjects.find(x=>x.id==sid);return s&&s.sections.find(x=>x.id==did)};const gs=groupBy(p.tasks,sec());let made=0;
-gs.forEach(g=>{if(!g.tid){const t={id:uid(),name:g.name,count:0};sec().topics.push(t);g.tid=t.id;g.isNew=true;made++}});
+async function iDai(){const raw=($('#id-raw')||{}).value||'';if(raw.trim().length<40)return toast('Wklej treść arkusza (co najmniej kilka zdań)');const sub=curSub(),sec=E.imp=='sec'?curSec():null,btn=$('#id-ai');btn.disabled=true;btn.textContent='AI pracuje…';
+try{const g=await runJob({kind:'e8sort',id:sub.id,subject:sub.name,section:sec?sec.name:'',structure:(sec?[sec]:sub.sections).map(d=>({dzial:d.name,tematy:d.topics.map(t=>t.name)})),text:raw},'sort-'+sub.id);const t=$('#id-t');if(!t)return;t.value=JSON.stringify(g.data);iDPrev();toast('AI przygotowało zadania – sprawdź podział i kliknij Importuj')}
+catch(e){toast('AI: '+errMsg(String(e)))}finally{const b=$('#id-ai');if(b){b.disabled=false;b.innerHTML=ic('spark')+'Zrób to wbudowanym AI'}}}
+async function iDgo(){const p=parseE8(($('#id-t')||{}).value);if(!p.tasks.length)return toast('Nie rozpoznano zadań');const sid=E.sid,fx=E.imp=='sec'?E.did:null;closeM();
+const sub=()=>E8.tree.subjects.find(x=>x.id==sid),gs=groupBy2(p.tasks,sub(),fx),nsec={};let made=0;
+gs.forEach(g=>{if(!g.secId){const k=nrm(g.secName);if(!nsec[k]){const d={id:uid(),name:g.secName,topics:[]};sub().sections.push(d);nsec[k]=d;made++}g.secId=nsec[k].id}});
+gs.forEach(g=>{if(!g.tid){const d=sub().sections.find(x=>x.id==g.secId);let t=d.topics.find(x=>nrm(x.name)==nrm(g.topName)&&x.id!==undefined&&x._n);if(!t){t={id:uid(),name:g.topName,count:0,_n:1};d.topics.push(t);made++}g.tid=t.id;g.isNew=true}});
 toast('Importuję '+p.tasks.length+' zadań…');if(made&&!await saveTree())return;
-let total=0,fail=0,cut=0;for(const g of gs){try{const old=g.isNew?[]:((await api('e8/t/'+g.tid)).tasks||[]),add=g.tasks.map(t=>{const{temat,...x}=t;return x}),res=await api('e8/t/'+g.tid,{method:'PUT',body:JSON.stringify({tasks:[...old,...add]})});setCount(g.tid,res.count);total+=g.tasks.length;if(res.count<old.length+add.length)cut++}catch(e){fail++}}
-render();toast(fail?`Zaimportowano część zadań (błąd w ${fail} tematach)`:cut?`Zaimportowano ${total} zadań (w ${cut} tematach część ucięto – limit 200)`:`Zaimportowano ${total} zadań do ${gs.length} tematów`)}
+let total=0,fail=0,cut=0;for(const g of gs){try{const old=g.isNew?[]:((await api('e8/t/'+g.tid)).tasks||[]),add=g.tasks.map(t=>{const{temat,dzial,...x}=t;return x}),res=await api('e8/t/'+g.tid,{method:'PUT',body:JSON.stringify({tasks:[...old,...add]})});setCount(g.tid,res.count);total+=g.tasks.length;if(res.count<old.length+add.length)cut++}catch(e){fail++}}
+render();toast(fail?`Zaimportowano część zadań (błąd w ${fail} tematach)`:cut?`Zaimportowano ${total} zadań (w ${cut} tematach część ucięto – limit 200)`:`Zaimportowano ${total} zadań do ${gs.length} tematów${made?`, utworzono nowych działów i tematów: ${made}`:''}`)}
 function mvModal(i){modal(`<h2>Przenieś zadanie</h2><label>Do tematu<select id="mv-t">${e8tree().subjects.map(s=>s.sections.map(d=>`<optgroup label="${esc(s.name)} › ${esc(d.name)}">${d.topics.map(t=>`<option value="${t.id}" ${t.id==X.tid?'selected':''}>${esc(t.name)}</option>`).join('')}</optgroup>`).join('')).join('')}</select></label><div class="row"><button class="btn" data-a="sc">Anuluj</button><button class="btn pr" data-a="mvgo" data-i="${i}">Przenieś</button></div>`)}
 async function mvGo(i){const to=($('#mv-t')||{}).value;closeM();if(!to||to==X.tid)return;const task=cleanT(X.tasks[i]);if(!validT(task))return toast('Uzupełnij zadanie przed przeniesieniem');
 try{const old=(await api('e8/t/'+to)).tasks||[],res=await api('e8/t/'+to,{method:'PUT',body:JSON.stringify({tasks:[...old,task]})});setCount(to,res.count);X.tasks.splice(i,1);e8Rerender();e8Sched();toast('Przeniesiono zadanie')}catch(x){toast('Nie udało się przenieść zadania')}}
@@ -769,8 +770,10 @@ case 'e8dd':if(confirm('Usunąć dział razem z tematami i zadaniami?')){const s
 case 'e8ta':e8Name('Nowy temat','',v=>{curSec().topics.push({id:uid(),name:v,count:0});saveTree()});return true;
 case 'e8tr':{const x=curSec().topics.find(y=>y.id==D.id);e8Name('Zmień nazwę tematu',x.name,v=>{x.name=v;saveTree()});return true}
 case 'e8td':if(confirm('Usunąć temat razem z zadaniami?')){const d=curSec();d.topics=d.topics.filter(x=>x.id!=D.id);saveTree()}return true;
-case 'e8imd':iDModal();return true;
-case 'idcp':navigator.clipboard.writeText(e8PSec()).then(()=>toast('Skopiowano prompt – wklej go do AI z arkuszem'),()=>toast('Nie można skopiować'));return true;
+case 'e8imd':iModal('sec');return true;
+case 'e8ims':iModal('sub');return true;
+case 'idai':iDai();return true;
+case 'idcp':navigator.clipboard.writeText(e8PImp(E.imp)).then(()=>toast('Skopiowano prompt – wklej go do AI z arkuszem'),()=>toast('Nie można skopiować'));return true;
 case 'idgo':iDgo();return true;
 case 'tkmv':mvModal(i);return true;
 case 'mvgo':mvGo(+D.i);return true;
@@ -819,7 +822,7 @@ else if(a=='img'){const f=$('#e-i');f.onchange=async()=>{const h=$('#e-h');for(c
 else if(a=='pdf')pdf();else if(a=='jpg')jpg();
 else if(a=='cp'){navigator.clipboard.writeText((R.e.ti?R.e.ti+'\n\n':'')+$('#e-h').innerText).then(()=>toast('Skopiowano tekst'),()=>toast('Nie można skopiować'))}
 else if(a=='pref')pref();
-else if(a=='pr0'){P={sz:19,lh:1.75,w:'full',ff:'sans',th:'auto',au:1,dc:1,xf:'serif',cs:'glass',ds:'normal',ac:''};savP();ap();closeM();if(R&&R.m!='edit')show(R.m);else if(!R)render()}
+else if(a=='pr0'){P={sz:19,lh:1.75,w:'full',ff:'sans',th:'auto',xf:'serif',cs:'glass',ds:'normal',ac:''};savP();ap();closeM();if(R&&R.m!='edit')show(R.m);else if(!R)render()}
 else if(a=='flip'){if(Date.now()-(R.sw||0)>350)$('.fcc').classList.toggle('f')}
 else if(a=='cok')rate('ok');else if(a=='cno')rate('no');else if(a=='chd')rate('hd');
 else if(a=='hint'){R.c.hint=1;upd()}
@@ -851,7 +854,7 @@ else if(t.id=='imp-t')impPrev();
 else if(t.id=='p-th'){lt=t.value=='auto'?null:t.value;try{lt?localStorage.setItem('th',lt):localStorage.removeItem('th')}catch(e){}ap();if(!R&&!X)render();const o=$('#rd');if(o)o.className=rcls();const o8=$('#e8o');if(o8)o8.className=rcls()+' e8'}
 else if(D.dk){const i=+D.i,j=+D.j,d=R.dk,k=D.dk;if(k=='cq')d.cards[i].q=t.value;else if(k=='ca')d.cards[i].a=t.value;else if(k=='qq')d.quiz[i].q=t.value;else if(k=='qo')d.quiz[i].opts[j]=t.value;else if(k=='qe')d.quiz[i].ex=t.value;if(t.tagName=='TEXTAREA'){t.style.height='auto';t.style.height=t.scrollHeight+'px'}dkSched()}
 else if(t.id=='e-h')chg();
-else if(D.p){const v=t.type=='checkbox'?(t.checked?1:0):t.type=='range'?+t.value:t.value;P[D.p]=v;savP();ap();const o=$('#rd');if(o){o.className=rcls();o.style.cssText=rvars()}const o8=$('#e8o');if(o8){o8.className=rcls()+' e8';o8.style.cssText=rvars();document.querySelectorAll('#e8o .cv').forEach(c=>padPaint(c))}if(D.p=='sz'){const l=$('#pv-sz');if(l)l.textContent=v}if(R&&R.m=='read'&&(D.p=='au'||D.p=='dc')){const y=o.querySelector('.rsc').scrollTop;show('read');o.querySelector('.rsc').scrollTop=y}else if(!R&&(D.p=='cs'||D.p=='ds'||D.p=='ac'))ap()}
+else if(D.p){const v=t.type=='checkbox'?(t.checked?1:0):t.type=='range'?+t.value:t.value;P[D.p]=v;savP();ap();const o=$('#rd');if(o){o.className=rcls();o.style.cssText=rvars()}const o8=$('#e8o');if(o8){o8.className=rcls()+' e8';o8.style.cssText=rvars();document.querySelectorAll('#e8o .cv').forEach(c=>padPaint(c))}if(D.p=='sz'){const l=$('#pv-sz');if(l)l.textContent=v}if(!R&&(D.p=='cs'||D.p=='ds'||D.p=='ac'))ap()}
 else if(!cur&&!D.s)return;
 else if(t.id=='e-t'){cur.ti=t.value;sched()}else if(t.id=='e-s'){cur.s=t.value;sched()}
 else if(t.id=='e-d'){cur.d=t.value;const l=lessonAt(cur.d,cur.l);if(l){cur.s=l;$('#e-s').value=l}else cur.l='';$('#e-l').innerHTML=lopts(cur);sched()}
@@ -864,6 +867,8 @@ let ip=null,view='notes',X=null;
 addEventListener('beforeinstallprompt',e=>{e.preventDefault();ip=e;if(!R&&$('#app'))render()});
 addEventListener('appinstalled',()=>{ip=null;if(!R)render();toast('Aplikacja zainstalowana')});
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));
+{const n=document.createElement('nav');n.className='pn';n.id='pn';document.body.append(n)}
+new MutationObserver(ovl).observe($('#ov'),{childList:true});addEventListener('resize',()=>updPill());
 ap();render(1);splash();load();
 setInterval(()=>{if(!R&&!X&&!document.hidden&&document.activeElement?.id!='q'){load(1);if(view=='e8')loadE8()}},30000);
 </script></body></html>
