@@ -1,5 +1,5 @@
 import { getStore } from "@netlify/blobs";
-import { timingSafeEqual } from "node:crypto";
+import { timingSafeEqual, randomUUID } from "node:crypto";
 
 const J = (o, s = 200) =>
   new Response(JSON.stringify(o), {
@@ -23,20 +23,28 @@ const ID = /^[\w-]{1,40}$/;
 // ---- E8: przedmioty -> tematy -> zadania ----
 const T8 = ["choice", "tf", "num", "open"];
 const rid = () => Math.random().toString(36).slice(2, 10);
+const okImg = (u) =>
+  typeof u === "string" &&
+  (/^\/api\/img\/[\w-]{1,40}$/.test(u) || (/^data:image\/(jpeg|png|webp);base64,/.test(u) && u.length < 700000));
 const task8 = (t) => {
   t = t || {};
-  const pairs = (Array.isArray(t.opts) ? t.opts : []).map((x, i) => ({ o: str(x, 400), w: str(Array.isArray(t.exo) ? t.exo[i] : "", 800) }));
+  const pairs = (Array.isArray(t.opts) ? t.opts : []).map((x, i) => ({
+    o: str(x, 400),
+    w: str(Array.isArray(t.exo) ? t.exo[i] : "", 800),
+    m: Array.isArray(t.oimg) && okImg(t.oimg[i]) ? t.oimg[i] : "",
+  }));
   const correct = Number.isInteger(t.ans) && pairs[t.ans] ? pairs[t.ans].o : "";
   const kept = pairs.filter((p) => p.o).slice(0, 6);
   const opts = kept.map((p) => p.o);
   return {
-    id: ID.test(String(t.id)) ? t.id : rid(),
+    id: (typeof t.id === "string" && ID.test(t.id)) ? t.id : rid(),
     type: T8.includes(t.type) ? t.type : "choice",
     kind: t.kind === "cw" ? "cw" : "cke",
     q: str(t.q, 3000),
-    img: typeof t.img === "string" && /^data:image\/(jpeg|png|webp);base64,/.test(t.img) && t.img.length < 700000 ? t.img : "",
+    imgs: [...(Array.isArray(t.imgs) ? t.imgs : []), ...(t.img ? [t.img] : [])].filter(okImg).slice(0, 4),
     opts,
     exo: kept.map((p) => p.w),
+    oimg: kept.map((p) => p.m),
     ans: correct ? opts.indexOf(correct) : -1,
     st: (Array.isArray(t.st) ? t.st : []).map((x) => ({ t: str(x && x.t, 500), v: !!(x && x.v), w: str(x && x.w, 800) })).filter((x) => x.t).slice(0, 8),
     num: str(t.num, 120),
@@ -46,6 +54,7 @@ const task8 = (t) => {
     pts: Math.max(0, Math.min(20, +t.pts || 0)),
   };
 };
+
 // Drzewo E8: przedmiot -> dział -> temat. Starsze drzewa (przedmiot -> temat) są zamieniane na jeden dział "Ogólne".
 const normTree = (t) => ({
   subjects: (t && Array.isArray(t.subjects) ? t.subjects : []).map((s) => ({
@@ -102,6 +111,25 @@ export default async (req) => {
       }
     }
 
+    if (parts[0] === "img") {
+      if (m === "POST") {
+        if (!okPw(req)) return J({ error: "pw" }, 401);
+        const b = await req.json();
+        const mm = /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/.exec(String((b && b.d) || ""));
+        if (!mm || mm[2].length > 1_800_000) return J({ error: "bad" }, 400);
+        const id = randomUUID().replace(/-/g, "").slice(0, 20);
+        await store.setJSON("i:" + id, { m: mm[1], b: mm[2] });
+        return J({ ok: 1, id });
+      }
+      if (m === "GET" && parts[1] && ID.test(parts[1])) {
+        const v = await store.get("i:" + parts[1], { type: "json" });
+        if (!v) return J({ error: "nf" }, 404);
+        return new Response(Buffer.from(v.b, "base64"), {
+          headers: { "content-type": v.m, "cache-control": "public, max-age=31536000, immutable" },
+        });
+      }
+    }
+
     if (parts[0] === "job" && parts[1] && m === "GET") {
       if (!/^[\w-]{1,60}$/.test(parts[1])) return J({ error: "bad id" }, 400);
       return J((await store.get("j:" + parts[1], { type: "json" })) || { status: "none" });
@@ -117,7 +145,7 @@ export default async (req) => {
         const cnt = {};
         old.forEach((t) => { cnt[t.id] = t.count || 0; });
         const used = new Set();
-        const uid = (v) => { let i = ID.test(String(v)) ? v : rid(); while (used.has(i)) i = rid(); used.add(i); return i; };
+        const uid = (v) => { let i = (typeof v === "string" && ID.test(v)) ? v : rid(); while (used.has(i)) i = rid(); used.add(i); return i; };
         const subjects = b.subjects.slice(0, 30).map((s) => ({
           id: uid(s.id),
           name: str(s.name, 80),

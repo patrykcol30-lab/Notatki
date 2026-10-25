@@ -58,7 +58,7 @@ Wymagania:
 - Każde zadanie MUSI mieć pole "wyjasnienie" – zwięzłe wyjaśnienie, dlaczego odpowiedź jest taka, a nie inna.
 - W "wybor" dodaj tablicę "wyjasnienia_odpowiedzi": jedno krótkie wyjaśnienie na każdą odpowiedź, w tej samej kolejności (dlaczego jest dobra albo dlaczego jest zła i jaki błąd za nią stoi).
 - W "prawda_falsz" każde zdanie ma własne pole "wyjasnienie".
-- Poziom i styl jak na egzaminie ósmoklasisty, treść poprawna merytorycznie. Matematykę zapisuj znakami Unicode (², √, ×, ÷, ½, π).
+- Poziom i styl jak na egzaminie ósmoklasisty, treść poprawna merytorycznie. Wzory matematyczne zapisuj w TeX między znakami dolara, np. $x^2$, $\\frac{1}{2}$, $\\sqrt{16}$, $90^\\circ$, $\\pi r^2$ (w JSON każdy ukośnik podwajaj). Zwykły tekst i jednostki (cm, zł) pisz poza dolarami.
 - Pole "rodzaj" ustaw na "cwiczenie". Pole "zrodlo" ustaw na "Ćwiczenie".
 - Język: polski.
 
@@ -80,7 +80,7 @@ Zasady:
 - Każde zadanie MUSI mieć "wyjasnienie" napisane własnymi słowami. W "wybor" dodaj "wyjasnienia_odpowiedzi" (po jednym na każdą odpowiedź, w tej samej kolejności), a w "prawda_falsz" każde zdanie ma własne "wyjasnienie".
 - Pole "poprawna" w "wybor" musi być identyczne z jedną z odpowiedzi.
 - Pole "rodzaj" ustaw na "arkusz", a "zrodlo" na rok i numer zadania, jeśli da się je ustalić z tekstu.
-- Matematykę zapisuj znakami Unicode (², √, ×, ÷, ½, π). Język: polski.
+- Wzory matematyczne zapisuj w TeX między znakami dolara, np. $x^2$, $\\frac{1}{2}$, $\\sqrt{16}$, $90^\\circ$ (w JSON każdy ukośnik podwajaj). Zwykły tekst i jednostki pisz poza dolarami. Język: polski.
 - Zwróć najwyżej 15 zadań.
 
 Odpowiedz WYŁĄCZNIE poprawnym JSON-em, bez komentarza i bez znaczników markdown:
